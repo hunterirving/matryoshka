@@ -39,6 +39,10 @@
 			font-size: 1.5em;
 			font-weight: bold;
 		}
+		#breadcrumbs {
+			font-size: 24px;
+			margin-bottom: 10px;
+		}
 	</style>
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
@@ -71,6 +75,38 @@
 				taskContainer.appendChild(taskInput);
 
 				return taskContainer;
+			}
+
+			function generateBreadcrumbs(rootTask, currentPath, selectedTaskId) {
+				let breadcrumbs = '● '; // Always start with the root
+				let currentTask = rootTask;
+
+				// Add filled circles for the current path
+				for (let i = 1; i < currentPath.length; i++) {
+					breadcrumbs += '● ';
+					currentTask = currentTask.subtasks.find(t => t.id === currentPath[i].id);
+				}
+
+				// If the selected task is not the current view's parent task, add empty circles for potential deeper levels
+				if (selectedTaskId !== currentTask.id) {
+					let selectedTask = currentTask.subtasks.find(t => t.id === selectedTaskId);
+					
+					if (selectedTask) {
+						function calculateMaxDepth(task, depth) {
+							if (task.subtasks.length === 0) return depth;
+							return Math.max(...task.subtasks.map(st => calculateMaxDepth(st, depth + 1)));
+						}
+
+						let maxDepth = calculateMaxDepth(selectedTask, currentPath.length);
+
+						// Add empty circles for potential deeper levels
+						for (let i = currentPath.length; i < maxDepth; i++) {
+							breadcrumbs += '○ ';
+						}
+					}
+				}
+
+				return breadcrumbs.trim();
 			}
 
 			function updateCheckboxState(checkbox, state) {
@@ -250,7 +286,8 @@
 				if (task.subtasks.length > 0) {
 					currentTask.selectedSubtaskId = task.id;
 					taskPath.push(task);
-					currentTask = task; // Add this line
+					currentTask = task;
+					updateBreadcrumbs(currentTask);
 					renderCurrentView();
 					const selectedTask = task.selectedSubtaskId ? 
 						task.subtasks.find(t => t.id === task.selectedSubtaskId) : 
@@ -260,7 +297,8 @@
 					addNewTask(task);
 					currentTask.selectedSubtaskId = task.id;
 					taskPath.push(task);
-					currentTask = task; // Add this line
+					currentTask = task;
+					updateBreadcrumbs(currentTask);
 					renderCurrentView();
 					selectAndFocusTask(task.subtasks[0]);
 				}
@@ -272,6 +310,7 @@
 					taskPath.pop();
 					currentTask = taskPath[taskPath.length - 1];
 					updateParentState(currentTask);
+					updateBreadcrumbs(currentTask);
 					renderCurrentView();
 					const selectedTask = currentTask.subtasks.find(t => t.id === currentTaskId);
 					selectAndFocusTask(selectedTask || currentTask.subtasks[0]);
@@ -299,11 +338,22 @@
 				if (task !== currentTask) {
 					currentTask.selectedSubtaskId = task.id;
 				}
+				// Update breadcrumbs when active task changes
+				updateBreadcrumbs(task);
+			}
+
+			function updateBreadcrumbs(selectedTask) {
+				const breadcrumbsContainer = document.getElementById('breadcrumbs');
+				const trail = generateBreadcrumbs(taskPath[0], taskPath, selectedTask.id);
+				breadcrumbsContainer.textContent = trail;
 			}
 
 			function renderCurrentView() {
 				appContainer.innerHTML = '';
 				currentTask = taskPath[taskPath.length - 1];
+
+				// Generate and display breadcrumbs
+				updateBreadcrumbs(currentTask);
 
 				const parentElement = createTaskElement(currentTask, true);
 				appContainer.appendChild(parentElement);
@@ -321,13 +371,11 @@
 			}
 
 			renderCurrentView();
-			if (currentTask.subtasks.length > 0) {
-				setTimeout(() => selectAndFocusTask(currentTask.subtasks[0]), 0);
-			}
 		});
 	</script>
 </head>
 <body>
+	<div id="breadcrumbs"></div>
 	<div id="app-container"></div>
 </body>
 </html>
