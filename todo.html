@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Advanced Task Tracker</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 20px;
+		}
+		ul {
+			list-style-type: none;
+			padding-left: 20px;
+		}
+		input[type="text"] {
+			border: none;
+			background: transparent;
+			font-size: 1.17em;
+			font-weight: bold;
+			width: calc(100% - 30px);
+			margin-left: 5px;
+			padding: 5px;
+		}
+		input[type="text"]:focus {
+			outline: none;
+		}
+		.task-container {
+			display: flex;
+			align-items: center;
+			margin: 5px 0;
+		}
+		.active {
+			background-color: #e6f3ff;
+		}
+		.parent-task {
+			font-size: 1.5em;
+			font-weight: bold;
+		}
+	</style>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const appContainer = document.getElementById('app-container');
+			let currentTask = { id: 'root', text: 'todo', state: 0, subtasks: [{ id: Date.now(), text: '', state: 0, subtasks: [] }], selectedSubtaskId: null };
+			let taskPath = [currentTask];
+
+			function createTaskElement(task, isParent = false) {
+				const taskContainer = document.createElement('div');
+				taskContainer.className = 'task-container';
+				taskContainer.dataset.id = task.id;
+				if (isParent) taskContainer.classList.add('parent-task');
+
+				const checkbox = document.createElement('input');
+				checkbox.type = 'checkbox';
+				updateCheckboxState(checkbox, task.state);
+				checkbox.addEventListener('click', (e) => {
+					e.preventDefault(); // Prevent default checkbox behavior
+					toggleTaskState(task);
+				});
+
+				const taskInput = document.createElement('input');
+				taskInput.type = 'text';
+				taskInput.value = task.text;
+				taskInput.addEventListener('keydown', (e) => handleKeyDown(e, task));
+				taskInput.addEventListener('input', () => task.text = taskInput.value);
+				taskInput.addEventListener('focus', () => setActiveTask(taskInput, task));
+
+				taskContainer.appendChild(checkbox);
+				taskContainer.appendChild(taskInput);
+
+				return taskContainer;
+			}
+
+			function updateCheckboxState(checkbox, state) {
+				checkbox.checked = state === 1;
+				checkbox.indeterminate = state === 2;
+			}
+
+			function toggleTaskState(task) {
+				if (task.state === 1) {
+					// If the task is checked, only uncheck it if it's not a parent with all checked direct children
+					if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
+						task.state = 0;
+						if (task.subtasks.length > 0) {
+							// If it's a parent task, set indeterminate subtasks to unchecked
+							task.subtasks.forEach(subtask => {
+								if (subtask.state === 2) {
+									subtask.state = 0;
+								}
+							});
+						}
+					}
+					// If it's a parent with all direct children checked, do nothing (stay checked)
+				} else {
+					// If the task is unchecked or indeterminate, check it
+					task.state = 1;
+					if (task.subtasks.length > 0) {
+						// If it's a parent task, set unchecked subtasks to indeterminate
+						task.subtasks.forEach(subtask => {
+							if (subtask.state === 0) {
+								subtask.state = 2; // Set to indeterminate
+							}
+						});
+					}
+				}
+				updateParentState(task);
+				renderCurrentView();
+				selectAndFocusTask(task);
+			}
+
+			function updateParentState(task) {
+				const parent = findParentTask(task);
+				if (parent) {
+					const allChecked = parent.subtasks.every(t => t.state === 1);
+					const anyUnchecked = parent.subtasks.some(t => t.state === 0);
+
+					if (allChecked) {
+						parent.state = 1; // Checked
+					} else if (anyUnchecked) {
+						parent.state = 0; // Unchecked
+					}
+					// If all children are either checked or indeterminate, don't change the parent's state
+
+					updateParentState(parent);
+				}
+			}
+
+			function updateSubtasksState(task, state) {
+				task.subtasks.forEach(subtask => {
+					subtask.state = state;
+					if (subtask.subtasks.length > 0) {
+						updateSubtasksState(subtask, state);
+					}
+				});
+			}
+
+			function findParentTask(task) {
+				for (let i = taskPath.length - 1; i >= 0; i--) {
+					const potentialParent = taskPath[i];
+					if (potentialParent.subtasks.some(t => t.id === task.id)) {
+						return potentialParent;
+					}
+				}
+				return null;
+			}
+
+			function handleKeyDown(e, task) {
+				if (e.key === 'Enter') {
+					e.preventDefault();
+					if (e.shiftKey) {
+						toggleTaskState(task);
+					} else {
+						addNewTask(currentTask, task);
+					}
+				} else if (e.key === 'Backspace' && e.target.value === '' && task !== currentTask) {
+					e.preventDefault();
+					deleteTask(task);
+				} else if (e.key === 'ArrowUp') {
+					e.preventDefault();
+					navigateTasks('up');
+				} else if (e.key === 'ArrowDown') {
+					e.preventDefault();
+					navigateTasks('down');
+				} else if (e.key === 'ArrowRight' && e.shiftKey) {
+					e.preventDefault();
+					if (task !== currentTask) {
+						navigateInto(task);
+					}
+				} else if (e.key === 'ArrowLeft' && e.shiftKey) {
+					e.preventDefault();
+					navigateOut();
+				}
+			}
+
+			function addNewTask(parentTask, currentSubtask = null) {
+				const newTask = { id: Date.now(), text: '', state: 0, subtasks: [], selectedSubtaskId: null };
+				if (currentSubtask) {
+					const index = parentTask.subtasks.findIndex(t => t.id === currentSubtask.id);
+					parentTask.subtasks.splice(index + 1, 0, newTask);
+				} else {
+					parentTask.subtasks.push(newTask);
+				}
+
+				parentTask.state = 0;
+				parentTask.subtasks.forEach(subtask => {
+					if (subtask.state === 2) {
+						subtask.state = 0;
+					}
+				});
+
+				renderCurrentView();
+				selectAndFocusTask(newTask);
+			}
+
+			function selectAndFocusTask(task) {
+				const taskInput = document.querySelector(`.task-container[data-id="${task.id}"] input[type="text"]`);
+				if (taskInput) {
+					taskInput.focus();
+					setActiveTask(taskInput, task);
+				}
+			}
+
+			function deleteTask(task) {
+				const parent = taskPath[taskPath.length - 1];
+				const index = parent.subtasks.findIndex(t => t.id === task.id);
+
+				if (parent.id === 'root' && parent.subtasks.length === 1) {
+					return;
+				}
+
+				parent.subtasks = parent.subtasks.filter(t => t.id !== task.id);
+				updateParentState(parent);
+
+				if (parent.subtasks.length === 0 && taskPath.length > 1) {
+					navigateOut();
+				} else {
+					renderCurrentView();
+					if (parent.subtasks.length > 0) {
+						const targetIndex = Math.max(0, index - 1);
+						selectAndFocusTask(parent.subtasks[targetIndex]);
+					} else {
+						selectAndFocusTask(parent);
+					}
+				}
+			}
+
+			function navigateTasks(direction) {
+				const tasks = currentTask.subtasks;
+				const currentElement = document.activeElement;
+				const currentContainer = currentElement.closest('.task-container');
+				const currentIndex = Array.from(appContainer.querySelectorAll('.task-container')).indexOf(currentContainer);
+
+				if (direction === 'up') {
+					if (currentIndex > 0) {
+						const prevTask = currentIndex === 1 ? currentTask : tasks[currentIndex - 2];
+						selectAndFocusTask(prevTask);
+					}
+				} else {
+					if (currentIndex === tasks.length) {
+						addNewTask(currentTask);
+					} else {
+						selectAndFocusTask(tasks[currentIndex]);
+					}
+				}
+			}
+
+			function navigateInto(task) {
+				if (task.subtasks.length > 0) {
+					currentTask.selectedSubtaskId = task.id;
+					taskPath.push(task);
+					currentTask = task; // Add this line
+					renderCurrentView();
+					const selectedTask = task.selectedSubtaskId ? 
+						task.subtasks.find(t => t.id === task.selectedSubtaskId) : 
+						task.subtasks[0];
+					selectAndFocusTask(selectedTask);
+				} else {
+					addNewTask(task);
+					currentTask.selectedSubtaskId = task.id;
+					taskPath.push(task);
+					currentTask = task; // Add this line
+					renderCurrentView();
+					selectAndFocusTask(task.subtasks[0]);
+				}
+			}
+
+			function navigateOut() {
+				if (taskPath.length > 1) {
+					const currentTaskId = currentTask.id;
+					taskPath.pop();
+					currentTask = taskPath[taskPath.length - 1];
+					updateParentState(currentTask);
+					renderCurrentView();
+					const selectedTask = currentTask.subtasks.find(t => t.id === currentTaskId);
+					selectAndFocusTask(selectedTask || currentTask.subtasks[0]);
+					currentTask.selectedSubtaskId = currentTaskId;
+				}
+			}
+
+			function reevaluateTaskState(task) {
+				if (task.subtasks.length > 0) {
+					const allChecked = task.subtasks.every(t => t.state === 1);
+					const anyChecked = task.subtasks.some(t => t.state === 1);
+
+					if (allChecked) {
+						task.state = 1; // Checked
+					} else if (!anyChecked) {
+						task.state = 0; // Unchecked
+					}
+					// If some subtasks are checked and some are not, we don't change the parent's state
+				}
+			}
+
+			function setActiveTask(input, task) {
+				document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+				input.closest('.task-container').classList.add('active');
+				if (task !== currentTask) {
+					currentTask.selectedSubtaskId = task.id;
+				}
+			}
+
+			function renderCurrentView() {
+				appContainer.innerHTML = '';
+				currentTask = taskPath[taskPath.length - 1];
+
+				const parentElement = createTaskElement(currentTask, true);
+				appContainer.appendChild(parentElement);
+
+				const subtasksList = document.createElement('ul');
+				currentTask.subtasks.forEach(subtask => {
+					const li = document.createElement('li');
+					li.appendChild(createTaskElement(subtask));
+					subtasksList.appendChild(li);
+				});
+				appContainer.appendChild(subtasksList);
+
+				const parentCheckbox = parentElement.querySelector('input[type="checkbox"]');
+				updateCheckboxState(parentCheckbox, currentTask.state);
+			}
+
+			renderCurrentView();
+			if (currentTask.subtasks.length > 0) {
+				setTimeout(() => selectAndFocusTask(currentTask.subtasks[0]), 0);
+			}
+		});
+	</script>
+</head>
+<body>
+	<div id="app-container"></div>
+</body>
+</html>
