@@ -68,7 +68,9 @@
 				taskInput.type = 'text';
 				taskInput.value = task.text;
 				taskInput.addEventListener('keydown', (e) => handleKeyDown(e, task));
-				taskInput.addEventListener('input', () => task.text = taskInput.value);
+				taskInput.addEventListener('input', () => {
+					task.text = taskInput.value;
+				});
 				taskInput.addEventListener('focus', () => setActiveTask(taskInput, task));
 
 				taskContainer.appendChild(checkbox);
@@ -188,22 +190,27 @@
 			}
 
 			function handleKeyDown(e, task) {
-				if (e.key === 'Enter') {
+				if (e.key === 'Enter' && !e.shiftKey) {
 					e.preventDefault();
-					if (e.shiftKey) {
-						toggleTaskState(task);
-					} else {
-						addNewTask(currentTask, task);
-					}
+					addNewTask(currentTask, task);
+				} else if (e.key === 'Enter' && e.shiftKey) {
+					e.preventDefault();
+					toggleTaskState(task);
 				} else if (e.key === 'Backspace' && e.target.value === '' && task !== currentTask) {
 					e.preventDefault();
 					deleteTask(task);
-				} else if (e.key === 'ArrowUp') {
+				} else if (e.key === 'ArrowUp' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('up');
-				} else if (e.key === 'ArrowDown') {
+				} else if (e.key === 'ArrowDown' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('down');
+				} else if (e.key === 'ArrowUp' && e.shiftKey) {
+					e.preventDefault();
+					moveTask(task, 'up');
+				} else if (e.key === 'ArrowDown' && e.shiftKey) {
+					e.preventDefault();
+					moveTask(task, 'down');
 				} else if (e.key === 'ArrowRight' && e.shiftKey) {
 					e.preventDefault();
 					if (task !== currentTask) {
@@ -213,6 +220,25 @@
 					e.preventDefault();
 					navigateOut();
 				}
+			}
+
+			function moveTask(task, direction) {
+				const parent = findParentTask(task);
+				if (!parent) return; // Can't move the root task
+
+				const index = parent.subtasks.findIndex(t => t.id === task.id);
+				if (index === -1) return; // Task not found in parent's subtasks
+
+				if (direction === 'up' && index > 0) {
+					// Move task up
+					[parent.subtasks[index - 1], parent.subtasks[index]] = [parent.subtasks[index], parent.subtasks[index - 1]];
+				} else if (direction === 'down' && index < parent.subtasks.length - 1) {
+					// Move task down
+					[parent.subtasks[index], parent.subtasks[index + 1]] = [parent.subtasks[index + 1], parent.subtasks[index]];
+				}
+
+				renderCurrentView();
+				selectAndFocusTask(task);
 			}
 
 			function addNewTask(parentTask, currentSubtask = null) {
@@ -373,6 +399,14 @@
 
 				const parentCheckbox = parentElement.querySelector('input[type="checkbox"]');
 				updateCheckboxState(parentCheckbox, currentTask.state);
+
+				// Maintain focus on the selected task
+				if (currentTask.selectedSubtaskId) {
+					const selectedTask = currentTask.subtasks.find(t => t.id === currentTask.selectedSubtaskId);
+					if (selectedTask) {
+						selectAndFocusTask(selectedTask);
+					}
+				}
 			}
 
 			renderCurrentView();
