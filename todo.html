@@ -60,14 +60,35 @@
 				checkbox.type = 'checkbox';
 				updateCheckboxState(checkbox, task.state);
 				checkbox.addEventListener('click', (e) => {
-					e.preventDefault(); // Prevent default checkbox behavior
+					e.preventDefault();
 					toggleTaskState(task);
 				});
 
 				const taskInput = document.createElement('input');
 				taskInput.type = 'text';
 				taskInput.value = task.text;
-				taskInput.addEventListener('keydown', (e) => handleKeyDown(e, task));
+
+				let canDelete = true;
+
+				taskInput.addEventListener('keydown', (e) => {
+					if (e.key === 'Backspace') {
+						if (taskInput.value === '' && canDelete && task !== taskPath[0]) {
+							e.preventDefault();
+							deleteTask(task);
+						} else if (taskInput.value !== '') {
+							canDelete = false;
+						}
+					} else {
+						handleKeyDown(e, task);
+					}
+				});
+
+				taskInput.addEventListener('keyup', (e) => {
+					if (e.key === 'Backspace') {
+						canDelete = (taskInput.value === '');
+					}
+				});
+
 				taskInput.addEventListener('input', () => {
 					task.text = taskInput.value;
 				});
