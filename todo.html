@@ -49,6 +49,7 @@
 			const appContainer = document.getElementById('app-container');
 			let currentTask = { id: 'root', text: 'todo', state: 0, subtasks: [{ id: Date.now(), text: '', state: 0, subtasks: [] }], selectedSubtaskId: null };
 			let taskPath = [currentTask];
+			let globalBackspaceBlock = false;
 
 			function createTaskElement(task, isParent = false) {
 				const taskContainer = document.createElement('div');
@@ -68,26 +69,38 @@
 				taskInput.type = 'text';
 				taskInput.value = task.text;
 
-				let canDelete = true;
+				const backspaceHandler = (function() {
+					let canDelete = true;
 
-				taskInput.addEventListener('keydown', (e) => {
-					if (e.key === 'Backspace') {
-						if (taskInput.value === '' && canDelete && task !== taskPath[0]) {
-							e.preventDefault();
-							deleteTask(task);
-						} else if (taskInput.value !== '') {
-							canDelete = false;
+					return {
+						keydown: function(e) {
+							if (e.key === 'Backspace') {
+								if (globalBackspaceBlock) {
+									e.preventDefault();
+									return;
+								}
+								if (taskInput.value === '' && canDelete && task !== taskPath[0]) {
+									e.preventDefault();
+									globalBackspaceBlock = true;
+									deleteTask(task);
+								} else if (taskInput.value !== '') {
+									canDelete = false;
+								}
+							} else {
+								handleKeyDown(e, task);
+							}
+						},
+						keyup: function(e) {
+							if (e.key === 'Backspace') {
+								canDelete = (taskInput.value === '');
+								globalBackspaceBlock = false;
+							}
 						}
-					} else {
-						handleKeyDown(e, task);
-					}
-				});
+					};
+				})();
 
-				taskInput.addEventListener('keyup', (e) => {
-					if (e.key === 'Backspace') {
-						canDelete = (taskInput.value === '');
-					}
-				});
+				taskInput.addEventListener('keydown', backspaceHandler.keydown);
+				taskInput.addEventListener('keyup', backspaceHandler.keyup);
 
 				taskInput.addEventListener('input', () => {
 					task.text = taskInput.value;
