@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Advanced Task Tracker</title>
+	<title>todo</title>
 	<style>
 		body {
 			font-family: Arial, sans-serif;
@@ -78,14 +78,19 @@
 			}
 
 			function generateBreadcrumbs(rootTask, currentPath, selectedTaskId) {
-				let breadcrumbs = '● '; // Always start with the root
+				let breadcrumbs = '';
 				let currentTask = rootTask;
+				let currentDepth = 0;
 
-				// Add filled circles for the current path
-				for (let i = 1; i < currentPath.length; i++) {
-					breadcrumbs += '● ';
-					currentTask = currentTask.subtasks.find(t => t.id === currentPath[i].id);
+				// Add empty circles for levels before the current one
+				for (let i = 0; i < currentPath.length - 1; i++) {
+					breadcrumbs += '○ ';
+					currentTask = currentTask.subtasks.find(t => t.id === currentPath[i + 1].id);
 				}
+
+				// Add filled circle for the current level
+				breadcrumbs += '● ';
+				currentDepth = currentPath.length - 1;
 
 				// If the selected task is not the current view's parent task, add empty circles for potential deeper levels
 				if (selectedTaskId !== currentTask.id) {
@@ -97,10 +102,10 @@
 							return Math.max(...task.subtasks.map(st => calculateMaxDepth(st, depth + 1)));
 						}
 
-						let maxDepth = calculateMaxDepth(selectedTask, currentPath.length);
+						let maxDepth = calculateMaxDepth(selectedTask, currentDepth + 1);
 
 						// Add empty circles for potential deeper levels
-						for (let i = currentPath.length; i < maxDepth; i++) {
+						for (let i = currentDepth + 1; i < maxDepth; i++) {
 							breadcrumbs += '○ ';
 						}
 					}
