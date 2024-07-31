@@ -107,6 +107,7 @@
 
 				taskInput.addEventListener('keydown', backspaceHandler.keydown);
 				taskInput.addEventListener('keyup', backspaceHandler.keyup);
+				taskInput.addEventListener('keydown', copyActiveTaskText);
 
 				taskInput.addEventListener('input', () => {
 					task.text = taskInput.value;
@@ -461,6 +462,22 @@
 					const selectedTask = currentTask.subtasks.find(t => t.id === currentTask.selectedSubtaskId);
 					if (selectedTask) {
 						selectAndFocusTask(selectedTask);
+					}
+				}
+			}
+
+			function copyActiveTaskText(e) {
+				// Check if the key combination is Ctrl+C (Windows) or Cmd+C (Mac)
+				if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+					const activeTaskInput = document.querySelector('.task-container.active input[type="text"]');
+					if (activeTaskInput) {
+						// Check if there's a selection within the active task input
+						const selectedText = activeTaskInput.value.substring(activeTaskInput.selectionStart, activeTaskInput.selectionEnd);
+						
+						const textToCopy = selectedText || activeTaskInput.value;
+						
+						e.preventDefault(); // Prevent default copy behavior
+						navigator.clipboard.writeText(textToCopy);
 					}
 				}
 			}
