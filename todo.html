@@ -72,7 +72,6 @@
 
 				const backspaceHandler = (function() {
 					let canDelete = true;
-
 					return {
 						keydown: function(e) {
 							if (e.key === 'Backspace') {
@@ -112,7 +111,11 @@
 
 				taskInput.addEventListener('input', () => {
 					task.text = taskInput.value;
+					if (task === currentTask) {
+						updatePageTitle(task);
+					}
 				});
+
 				taskInput.addEventListener('focus', () => setActiveTask(taskInput, task));
 
 				taskContainer.appendChild(checkbox);
@@ -485,7 +488,7 @@
 			}
 
 			function updatePageTitle(task) {
-				document.title = task.text || 'todo';
+				document.title = task.text || '?';
 			}
 
 			renderCurrentView();
