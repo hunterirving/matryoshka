@@ -64,6 +64,9 @@
 				arrowDown: {
 					canAdd: true,
 					blocked: false
+				},
+				shiftEnter: {
+					pressed: false
 				}
 			};
 
@@ -120,6 +123,7 @@
 							return;
 						}
 						if (isLastSubtask(task) && lastSubtaskDownArrowReleased && task !== currentTask) {
+							console.log('adding new subtask')
 							e.preventDefault();
 							keyHandler.arrowDown.blocked = true;
 							addNewSubtask(currentTask, task);
@@ -139,6 +143,7 @@
 					} else if (e.key === 'Enter') {
 						keyHandler.enter.canAdd = true;
 						keyHandler.enter.blocked = false;
+						keyHandler.shiftEnter.pressed = false;
 					} else if (e.key === 'ArrowDown') {
 						keyHandler.arrowDown.canAdd = true;
 						keyHandler.arrowDown.blocked = false;
@@ -272,7 +277,10 @@
 			function handleKeyDown(e, task) {
 				if (e.key === 'Enter' && e.shiftKey) {
 					e.preventDefault();
-					toggleTaskState(task);
+					if (!keyHandler.shiftEnter.pressed) {
+						keyHandler.shiftEnter.pressed = true;
+						toggleTaskState(task);
+					}
 				} else if (e.key === 'ArrowUp' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('up');
