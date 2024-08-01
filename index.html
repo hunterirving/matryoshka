@@ -119,7 +119,7 @@
 							e.preventDefault();
 							return;
 						}
-						if (isLastSubtask(task) && (lastSubtaskDownArrowReleased || currentTask.subtasks.length === 1)) {
+						if (isLastSubtask(task) && lastSubtaskDownArrowReleased && task !== currentTask) {
 							e.preventDefault();
 							keyHandler.arrowDown.blocked = true;
 							addNewSubtask(currentTask, task);
@@ -410,9 +410,6 @@
 						const prevTask = currentIndex === 1 ? currentTask : tasks[currentIndex - 2];
 						selectAndFocusTask(prevTask);
 					}
-					// } else if (currentTask !== taskPath[0]) {
-					// 	navigateToParentTask();
-					// }
 				} else {
 					if (currentIndex < tasks.length) {
 						selectAndFocusTask(tasks[currentIndex]);
@@ -470,6 +467,7 @@
 					currentTask.selectedSubtaskId = task.id;
 				}
 				updateBreadcrumbs(task);
+				lastSubtaskDownArrowReleased = isLastSubtask(task);
 			}
 
 			function updateBreadcrumbs(selectedTask) {
