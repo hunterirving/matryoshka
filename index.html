@@ -67,6 +67,12 @@
 				},
 				shiftEnter: {
 					pressed: false
+				},
+				shiftRight: {
+					pressed: false
+				},
+				shiftLeft: {
+					pressed: false
 				}
 			};
 
@@ -152,6 +158,10 @@
 						} else {
 							lastSubtaskDownArrowReleased = false;
 						}
+					} else if (e.key === 'ArrowRight') {
+						keyHandler.shiftRight.pressed = false;
+					} else if (e.key === 'ArrowLeft') {
+						keyHandler.shiftLeft.pressed = false;
 					}
 				};
 
@@ -295,12 +305,18 @@
 					moveSubtask(task, 'down');
 				} else if (e.key === 'ArrowRight' && e.shiftKey) {
 					e.preventDefault();
-					if (task !== currentTask) {
-						navigateIntoSubtask(task);
+					if (!keyHandler.shiftRight.pressed) {
+						keyHandler.shiftRight.pressed = true;
+						if (task !== currentTask) {
+							navigateIntoSubtask(task);
+						}
 					}
 				} else if (e.key === 'ArrowLeft' && e.shiftKey) {
 					e.preventDefault();
-					navigateToParentTask();
+					if (!keyHandler.shiftLeft.pressed) {
+						keyHandler.shiftLeft.pressed = true;
+						navigateToParentTask();
+					}
 				}
 			}
 
