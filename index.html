@@ -48,9 +48,78 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
 			const appContainer = document.getElementById('app-container');
-			let currentTask = { id: 'root', text: 'todo', state: 0, subtasks: [{ id: Date.now(), text: '', state: 0, subtasks: [] }], selectedSubtaskId: null };
+			let rootTask = loadFromLocalStorage();
+			let currentTask = rootTask;
 			let taskPath = [currentTask];
 			let lastSubtaskDownArrowReleased = false;
+			let saveTimer = null;
+
+			function scheduleSave() {
+				if (saveTimer) {
+					clearTimeout(saveTimer);
+				}
+				saveTimer = setTimeout(saveToLocalStorage, 1000);
+			}
+
+			function saveToLocalStorage() {
+				const serializedTasks = serializeTaskTree(taskPath[0]);
+				localStorage.setItem('taskTree', serializedTasks);
+				saveTimer = null;
+			}
+
+			function serializeTaskTree(task, depth = 0) {
+				const indentation = '\t'.repeat(depth);
+				let status = task.state === 0 ? '_' : (task.state === 1 ? 'x' : '?');
+				let serialized = `${indentation}${status} ${task.text}\n`;
+				
+				for (let subtask of task.subtasks) {
+					serialized += serializeTaskTree(subtask, depth + 1);
+				}
+				
+				return serialized;
+			}
+
+			function loadFromLocalStorage() {
+				const savedTasks = localStorage.getItem('taskTree');
+				if (savedTasks) {
+					return deserializeTaskTree(savedTasks);
+				} else {
+					return { id: 'root', text: 'todo', state: 0, subtasks: [{ id: Date.now(), text: '', state: 0, subtasks: [] }], selectedSubtaskId: null };
+				}
+			}
+
+			function deserializeTaskTree(serialized) {
+				const lines = serialized.split('\n').filter(line => line.trim() !== '');
+				const root = { id: 'root', subtasks: [] };
+				const stack = [{ task: root, depth: -1 }];
+
+				for (let line of lines) {
+					const depth = (line.match(/^\t*/)[0] || '').length;
+					const status = line[depth];
+					const text = line.slice(depth + 2);
+					
+					const newTask = {
+						id: Date.now() + Math.random(),
+						text: text,
+						state: status === '_' ? 0 : (status === 'x' ? 1 : 2),
+						subtasks: [],
+						selectedSubtaskId: null
+					};
+					
+					while (stack.length > 1 && stack[stack.length - 1].depth >= depth) {
+						stack.pop();
+					}
+					
+					if (depth === 0) {
+						Object.assign(root, newTask);
+					} else {
+						stack[stack.length - 1].task.subtasks.push(newTask);
+					}
+					stack.push({ task: newTask, depth: depth });
+				}
+				
+				return root;
+			}
 
 			const keyHandler = {
 				backspace: {
@@ -174,6 +243,7 @@
 					if (task === currentTask) {
 						updatePageTitle(task);
 					}
+					scheduleSave();
 				});
 
 				taskInput.addEventListener('focus', () => setActiveTask(taskInput, task));
@@ -247,6 +317,7 @@
 				updateParentTaskState(task);
 				renderCurrentView();
 				selectAndFocusTask(task);
+				scheduleSave();
 			}
 
 			function updateParentTaskState(task) {
@@ -335,6 +406,7 @@
 
 				renderCurrentView();
 				selectAndFocusTask(subtask);
+				scheduleSave();
 			}
 
 			function addNewSubtask(parentTask, currentSubtask = null) {
@@ -355,6 +427,7 @@
 
 				renderCurrentView();
 				selectAndFocusTask(newSubtask);
+				scheduleSave();
 			}
 
 			function selectAndFocusTask(task) {
@@ -387,6 +460,7 @@
 						selectAndFocusTask(parentTask);
 					}
 				}
+				scheduleSave();
 			}
 
 			function deleteCurrentParentTask() {
