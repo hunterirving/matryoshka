@@ -3,6 +3,7 @@
 a nested task manager that helps you break complex tasks down into manageable subtasks.
 
 <i>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</i>
+<br>(physical keyboard required (for now))
 
 ### key features
 - unlimited subtask depth
@@ -13,11 +14,8 @@ a nested task manager that helps you break complex tasks down into manageable su
 ### quickstart
 1. start by adding subtasks to the root "todo" task (press the `Enter` key)
 2. use `Shift + Arrow Right` to navigate into a subtask, making it the new parent task
-3. break tasks down further as desired
-4. use `Shift + Arrow Left` to return to parent tasks
-5. quickly mark tasks as complete or incomplete using `Shift + Enter`
-6. reorganize tasks using `Shift + Arrow Up/Down`
-
+3. use `Shift + Arrow Left` to return to parent tasks
+4. quickly mark tasks as complete or incomplete using `Shift + Enter`
 
 ## controls
 
