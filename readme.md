@@ -36,7 +36,7 @@ a hierarchical task manager that helps you break complex tasks down into managea
 ### text editing
 - standard text editing controls apply when a task's text area is focused
 - `Command/Ctrl + C`  copy the entire text of the currently selected task
-- `Command/Ctrl + V` paste text content from the clipboard into the current task's text input
+- `Command/Ctrl + V` paste text content from the clipboard into the current task
 
 ## data persistence
 your task tree is automatically saved to your browser's local storage. this ensures your tasks will persist even if you close the browser or refresh the page. note that clearing your browser data may erase your saved tasks.
