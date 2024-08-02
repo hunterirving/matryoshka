@@ -1,8 +1,8 @@
 # 🪆 matryoshka
 
-a hierarchical task manager that helps you break complex tasks down into manageable subtasks.
+a nested task manager that helps you break complex tasks down into manageable subtasks.
 
-<i>now available on <a href="https://hunterirving.github.io/matryoshka/">GitHub Pages</a>!</i>
+<i>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</i>
 
 ### key features
 - unlimited subtask depth
@@ -11,9 +11,9 @@ a hierarchical task manager that helps you break complex tasks down into managea
 - works completely offline
 
 ### quickstart
-1. start by adding subtasks to the root "todo" task
+1. start by adding subtasks to the root "todo" task (press the `Enter` key)
 2. use `Shift + Arrow Right` to navigate into a subtask, making it the new parent task
-3. break subtasks down further as desired
+3. break tasks down further as desired
 4. use `Shift + Arrow Left` to return to parent tasks
 5. quickly mark tasks as complete or incomplete using `Shift + Enter`
 6. reorganize tasks using `Shift + Arrow Up/Down`
@@ -42,7 +42,7 @@ a hierarchical task manager that helps you break complex tasks down into managea
 your task tree is automatically saved to your browser's local storage. this ensures your tasks will persist even if you close the browser or refresh the page. note that clearing your browser data may erase your saved tasks.
 
 ## browser compatibility
-this application is designed to run on modern web browsers with javascript enabled.
+this application is designed to run on modern web browsers with javascript enabled. mobile browsers are supported, but a physical keyboard is required (for now).
 
 ## privacy
 all data is stored locally on your machine. no data is sent to or stored on any external servers.
