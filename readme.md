@@ -12,7 +12,7 @@ a nested task manager that helps you break complex tasks down into manageable su
 - works completely offline
 
 ### quickstart
-1. start by adding subtasks to the root "todo" task (press the `Enter` key)
+1. press the `Enter` key to add subtasks to the root "todo" task, then give them descriptive names
 2. use `Shift + Arrow Right` to navigate into a subtask, making it the new parent task
 3. use `Shift + Arrow Left` to return to parent tasks
 4. quickly mark tasks as complete or incomplete using `Shift + Enter`
@@ -27,14 +27,14 @@ a nested task manager that helps you break complex tasks down into manageable su
 ### task management
 - `Enter` add a new task below the current selection
 - `Arrow Down` (on last subtask) add a new task at the bottom of the list
-- `Backspace` (on empty task): delete the current task (including any subtasks)
+- `Backspace` (when selected task's text is empty) delete the current task (including any subtasks)
 - `Shift + Enter` toggle task completion status (status changes cascade to subtasks)
 - `Shift + Arrow Up/Down` reposition the selected task within its current level
 
 ### text editing
 - standard text editing controls apply when a task's text area is focused
-- `Command/Ctrl + C`  copy the entire text of the currently selected task
-- `Command/Ctrl + V` paste text content from the clipboard into the current task
+- `Command/Ctrl + C`  copy the selected task's text
+- `Command/Ctrl + V` paste text content from the clipboard
 
 ## data persistence
 your task tree is automatically saved to your browser's local storage. this ensures your tasks will persist even if you close the browser or refresh the page. note that clearing your browser data may erase your saved tasks.
