@@ -82,7 +82,9 @@
 			function loadFromLocalStorage() {
 				const savedTasks = localStorage.getItem('taskTree');
 				if (savedTasks) {
-					return deserializeTaskTree(savedTasks);
+					const loadedTask = deserializeTaskTree(savedTasks);
+					loadedTask.id = 'root';  // Ensure the root always has 'root' as its ID
+					return loadedTask;
 				} else {
 					return { id: 'root', text: 'todo', state: 0, subtasks: [{ id: Date.now(), text: '', state: 0, subtasks: [] }], selectedSubtaskId: null };
 				}
@@ -99,7 +101,7 @@
 					const text = line.slice(depth + 2);
 					
 					const newTask = {
-						id: Date.now() + Math.random(),
+						id: depth === 0 ? 'root' : Date.now() + Math.random(),
 						text: text,
 						state: status === '_' ? 0 : (status === 'x' ? 1 : 2),
 						subtasks: [],
@@ -198,7 +200,6 @@
 							return;
 						}
 						if (isLastSubtask(task) && lastSubtaskDownArrowReleased && task !== currentTask) {
-							console.log('adding new subtask')
 							e.preventDefault();
 							keyHandler.arrowDown.blocked = true;
 							addNewSubtask(currentTask, task);
