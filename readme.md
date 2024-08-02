@@ -48,4 +48,4 @@ this application is designed to run on modern web browsers with javascript enabl
 all data is stored locally on your machine. no data is sent to or stored on any external servers.
 
 ## license
-this project is licensed under the GNU general public license v3.0.
+this project is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/LICENSE">GNU general public license v3.0</a>.
