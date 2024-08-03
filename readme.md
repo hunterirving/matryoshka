@@ -1,6 +1,6 @@
 # 🪆 matryoshka
 
-a nested task manager that helps you break complex tasks down into manageable subtasks.
+a nested task manager that breaks complex tasks into manageable subtasks.
 
 <i>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</i>
 <br>(physical keyboard required (for now))
@@ -12,28 +12,29 @@ a nested task manager that helps you break complex tasks down into manageable su
 - works completely offline
 
 ### quickstart
-1. press the `Enter` key to add subtasks to the root "todo" task, then give them descriptive names
-2. use `Shift + Arrow Right` to navigate into a subtask, making it the new parent task
-3. use `Shift + Arrow Left` to return to parent tasks
-4. quickly mark tasks as complete or incomplete using `Shift + Enter`
+1. press the `Enter` key to add subtasks to the root "todo" task
+2. give each new subtask a meaningful name
+3. use `Shift + Arrow Right` to navigate into a subtask
+4. use `Shift + Arrow Left` to return to the parent task
+5. use `Shift + Enter` to quickly mark tasks as complete or incomplete
 
 ## controls
 
 ### navigation
 - `Arrow Up/Down` move between tasks at the same level
 - `Shift + Arrow Right` navigate into a subtask
-- `Shift + Arrow Left` navigate back to the parent task
+- `Shift + Arrow Left` return to the enclosing parent task
 
 ### task management
-- `Enter` add a new task below the current selection
+- `Enter` add a new task
 - `Arrow Down` (on last subtask) add a new task at the bottom of the list
-- `Backspace` (when selected task's text is empty) delete the current task (including any subtasks)
+- `Backspace` (when selected task's text is empty) remove the task and its subtasks
 - `Shift + Enter` toggle task completion status (status changes cascade to subtasks)
 - `Shift + Arrow Up/Down` reposition the selected task within its current level
 
 ### text editing
-- standard text editing controls apply when a task's text area is focused
-- `Command/Ctrl + C`  copy the selected task's text
+- standard text editing controls apply 
+- `Command/Ctrl + C` copy the selected task's text
 - `Command/Ctrl + V` paste text content from the clipboard
 
 ## data persistence
