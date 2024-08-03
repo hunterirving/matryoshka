@@ -1,16 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="gak"> <!-- update to change theme -->
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪆</text></svg>">
 	<title>todo</title>
 	<style>
+		:root {
+			/* Base colors */
+			--goldenrod: #eeba30;
+			--tomato-soup: #FF6347;
+			--forest: #3CB371;
+ 
+			--slime: #ccff00;
+			--grape: #7700ff;
+			--snow: #ffffff;
+			--coal: #000000;
+
+			--chocolate: #59311a;
+			--strawberry: #ffd1dc;
+			--vanilla: #f3eedc;
+
+			--acorn: #5a352b;
+			--butternut-squash: #f4a127;
+			--pumpkin: #e5771e;
+			--olive: #4c620c;
+
+			--primordial-soup: #8e9918;
+			--clay: #58473d;
+			--lichen: #b1b893; /* New color */
+			--amber: #b76700; /* New color */
+			--algae: #4a5d23;
+			
+			--mint: #00a88a;
+			--lemoncurd: #ffc500;
+
+			--gold: #ffd700;
+			--red: #d32f2f;
+			--lantern-red: #b71c1c;
+			--firecracker: #ff5733;
+
+			--algae-green: #4a5d23;
+			--seaweed: #2e8b57;
+			--kelp: #769830;
+			--pond-scum: #9acd32;
+		
+
+			--teal: #008080;
+			--gray: #c0c0c0;
+			--dark-gray: #404040;
+			--blue: #000080;
+
+			--xp-blue: #004e92;
+			--xp-green: #009e49;
+			--xp-light-blue: #8fc8f7;
+			--xp-gray: #ffffff;
+		
+		}
+
+		:root[data-theme="gak"] {
+			--background: var(--snow);
+			--text: var(--coal);
+			--active-task-highlight: var(--slime);
+			--checkbox-accent-color: var(--grape);
+		}
+
+		:root[data-theme="harvest"] {
+			--background: var(--goldenrod);
+			--text: var(--acorn);
+			--active-task-highlight: var(--butternut-squash);
+			--checkbox-accent-color: var(--olive);
+		}
+
 		body {
 			font-family: Arial, sans-serif;
 			max-width: 800px;
 			margin: 0 auto;
 			padding: 20px;
+			background-color: var(--background);
+			color: var(--text);
 		}
 		ul {
 			list-style-type: none;
@@ -24,6 +92,7 @@
 			width: calc(100% - 30px);
 			margin-left: 5px;
 			padding: 5px;
+			color: var(--text)
 		}
 		input[type="text"]:focus {
 			outline: none;
@@ -32,9 +101,12 @@
 			display: flex;
 			align-items: center;
 			margin: 5px 0;
+			padding-left: 11px;
+			padding-top: 4px;
+			padding-bottom: 4px;
 		}
 		.active {
-			background-color: #e6f3ff;
+			background-color: var(--active-task-highlight);
 		}
 		.parent-task {
 			font-size: 1.5em;
@@ -43,6 +115,46 @@
 		#breadcrumbs {
 			font-size: 24px;
 			margin-bottom: 10px;
+			color: var(--text);
+		}
+		.custom-checkbox {
+			display: none;
+		}
+		.checkbox-label {
+			display: inline-block;
+			width: 20px;
+			height: 20px;
+			background-color: var(--background);
+			border: 2px solid var(--checkbox-accent-color);
+			position: relative;
+			cursor: pointer;
+			box-sizing: border-box;
+			border-radius: 4px;
+		}
+		.custom-checkbox:checked + .checkbox-label {
+			background-color: var(--checkbox-accent-color);
+		}
+		.custom-checkbox:checked + .checkbox-label::before {
+			content: '';
+			position: absolute;
+			left: 6px;
+			top: 2px;
+			width: 5px;
+			height: 10px;
+			border: solid var(--background);
+			border-width: 0 2px 2px 0;
+			transform: rotate(45deg);
+			box-sizing: border-box;
+		}
+		.custom-checkbox:indeterminate + .checkbox-label::before {
+			content: '';
+			position: absolute;
+			left: 25%;
+			right: 25%;
+			top: 50%;
+			height: 2px;
+			background-color: var(--checkbox-accent-color);
+			transform: translateY(-50%);
 		}
 	</style>
 	<script>
@@ -82,9 +194,7 @@
 			function loadFromLocalStorage() {
 				const savedTasks = localStorage.getItem('taskTree');
 				if (savedTasks) {
-					const loadedTask = deserializeTaskTree(savedTasks);
-					loadedTask.id = 'root';  // Ensure the root always has 'root' as its ID
-					return loadedTask;
+					return deserializeTaskTree(savedTasks);
 				} else {
 					return { id: 'root', text: 'todo', state: 0, subtasks: [{ id: Date.now(), text: '', state: 0, subtasks: [] }], selectedSubtaskId: null };
 				}
@@ -155,11 +265,17 @@
 
 				const checkbox = document.createElement('input');
 				checkbox.type = 'checkbox';
+				checkbox.className = 'custom-checkbox';
+				checkbox.id = `checkbox-${task.id}`;
 				updateCheckboxState(checkbox, task.state);
 				checkbox.addEventListener('click', (e) => {
 					e.preventDefault();
 					toggleTaskState(task);
 				});
+
+				const checkboxLabel = document.createElement('label');
+				checkboxLabel.className = 'checkbox-label';
+				checkboxLabel.setAttribute('for', `checkbox-${task.id}`);
 
 				const taskInput = document.createElement('input');
 				taskInput.type = 'text';
@@ -250,6 +366,7 @@
 				taskInput.addEventListener('focus', () => setActiveTask(taskInput, task));
 
 				taskContainer.appendChild(checkbox);
+				taskContainer.appendChild(checkboxLabel);
 				taskContainer.appendChild(taskInput);
 
 				return taskContainer;
