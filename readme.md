@@ -33,7 +33,7 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - `Shift + Arrow Up/Down` reposition the selected task within its current level
 
 ### text editing
-- `Left/Right` move text cursor within current task
+- `Left/Right` move text cursor within selected task
 - `Command/Ctrl + C` copy the selected task's text (or highlighted substring)
 - `Command/Ctrl + V` paste text content from the clipboard
 - `Command/Ctrl + Z` undo text edit
