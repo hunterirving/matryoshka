@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="harvest"> <!-- update to change theme -->
+<html lang="en" data-theme="gak"> <!-- update to change theme -->
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -137,6 +137,17 @@
 		}
 	</style>
 	<script>
+		document.addEventListener('click', function(e) {
+			if (!e.target.closest('.task-container')) {
+				const activeTask = document.querySelector('.task-container.active');
+				if (activeTask) {
+					const taskInput = activeTask.querySelector('input[type="text"]');
+					taskInput.focus();
+				} else {
+					selectFirstSubtask();
+				}
+			}
+		});
 		document.addEventListener('DOMContentLoaded', function() {
 			const appContainer = document.getElementById('app-container');
 			let rootTask = loadFromLocalStorage();
@@ -663,6 +674,7 @@
 				}
 				updateBreadcrumbs(task);
 				lastSubtaskDownArrowReleased = isLastSubtask(task);
+				input.focus();
 			}
 
 			function updateBreadcrumbs(selectedTask) {
@@ -696,7 +708,20 @@
 					const selectedTask = currentTask.subtasks.find(t => t.id === currentTask.selectedSubtaskId);
 					if (selectedTask) {
 						selectAndFocusTask(selectedTask);
+					} else {
+						selectFirstSubtask();
 					}
+				} else {
+					selectFirstSubtask();
+				}
+			}
+
+			function selectFirstSubtask() {
+				if (currentTask.subtasks.length > 0) {
+					const firstSubtask = currentTask.subtasks[0];
+					selectAndFocusTask(firstSubtask);
+				} else {
+					selectAndFocusTask(currentTask);
 				}
 			}
 
@@ -727,6 +752,7 @@
 			}
 
 			renderCurrentView();
+			selectFirstSubtask();
 		});
 	</script>
 </head>
