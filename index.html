@@ -40,15 +40,15 @@
 		:root[data-theme="gak"] {
 			--background: var(--snow);
 			--text: var(--coal);
-			--active-task-highlight: var(--slime);
-			--checkbox-accent-color: var(--grape);
+			--highlight: var(--slime);
+			--accent: var(--grape);
 		}
 
 		:root[data-theme="harvest"] {
 			--background: var(--goldenrod);
 			--text: var(--acorn);
-			--active-task-highlight: var(--butternut-squash);
-			--checkbox-accent-color: var(--olive);
+			--highlight: var(--butternut-squash);
+			--accent: var(--olive);
 		}
 
 		body {
@@ -79,6 +79,10 @@
 		input[type="text"]:focus {
 			outline: none;
 		}
+		input[type="text"]::selection {
+			background-color: var(--accent);
+			color: var(--background);
+		}
 		.task-container {
 			display: flex;
 			align-items: center;
@@ -88,7 +92,7 @@
 			padding-bottom: 4px;
 		}
 		.active {
-			background-color: var(--active-task-highlight);
+			background-color: var(--highlight);
 		}
 		.parent-task {
 			font-size: 1.5em;
@@ -107,14 +111,14 @@
 			width: 20px;
 			height: 20px;
 			background-color: var(--background);
-			border: 2px solid var(--checkbox-accent-color);
+			border: 2px solid var(--accent);
 			position: relative;
 			cursor: pointer;
 			box-sizing: border-box;
 			border-radius: 4px;
 		}
 		.custom-checkbox:checked + .checkbox-label {
-			background-color: var(--checkbox-accent-color);
+			background-color: var(--accent);
 		}
 		.custom-checkbox:checked + .checkbox-label::before {
 			content: '';
@@ -135,7 +139,7 @@
 			right: 25%;
 			top: 50%;
 			height: 2px;
-			background-color: var(--checkbox-accent-color);
+			background-color: var(--accent-color);
 			transform: translateY(-50%);
 		}
 	</style>

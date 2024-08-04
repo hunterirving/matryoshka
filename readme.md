@@ -9,7 +9,7 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - unlimited subtask depth
 - intuitive keyboard controls for rapid navigation
 - automatic saving using browser's local storage
-- works completely offline
+- complete offline functionality
 
 ### quickstart
 1. press the `Enter` key to add subtasks to the root "todo" task
@@ -33,9 +33,11 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - `Shift + Arrow Up/Down` reposition the selected task within its current level
 
 ### text editing
-- standard text editing controls apply 
-- `Command/Ctrl + C` copy the selected task's text
+- `Left/Right` move text cursor within current task
+- `Command/Ctrl + C` copy the selected task's text (or highlighted substring)
 - `Command/Ctrl + V` paste text content from the clipboard
+- `Command/Ctrl + Z` undo text edit
+- `Command/Ctrl + Shift + Z` redo text edit
 
 ## data persistence
 your task tree is automatically saved to your browser's local storage. this ensures your tasks will persist even if you close the browser or refresh the page. note that clearing your browser data may erase your saved tasks.
