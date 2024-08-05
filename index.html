@@ -632,13 +632,13 @@
 					if (currentIndex > 0) {
 						const prevTask = currentIndex === 1 ? currentTask : tasks[currentIndex - 2];
 						selectAndFocusTask(prevTask);
-						placeCursorAtBeginning(currentElement);
 					}
 				} else {
 					if (currentIndex < tasks.length) {
 						selectAndFocusTask(tasks[currentIndex]);
 					}
 				}
+				placeCursorAtBeginning(currentElement);
 				lastSubtaskDownArrowReleased = false;
 			}
 
