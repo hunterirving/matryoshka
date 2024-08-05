@@ -413,7 +413,7 @@
 
 			function toggleTaskState(task) {
 			if (task.state === 1) {
-				// Only allow unchecking if not all direct children are checked
+				// if all direct children are checked, disallow unchecking
 				if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
 					task.state = 0;
 					updateSubtasksState(task, 0);
@@ -448,9 +448,10 @@
 				if (task.subtasks.length === 0) {
 					return task.state; // If no subtasks, keep current state
 				}
-				const allChecked = task.subtasks.every(t => t.state === 1);
 				const anyUnchecked = task.subtasks.some(t => t.state === 0);
-				if (allChecked) {
+				const allCheckedOrIndeterminate = task.subtasks.every(t => t.state === 1 || t.state === 2);
+				
+				if (allCheckedOrIndeterminate) {
 					return 1; // Checked
 				} else if (anyUnchecked) {
 					return 0; // Unchecked
@@ -473,6 +474,21 @@
 						updateTaskAndAncestors(parent);
 					}
 				}
+			}
+
+			function updateSubtasksState(task, state) {
+				task.subtasks.forEach(subtask => {
+					if (subtask.state !== 1) {  // Only update if the subtask is not checked
+						if (state === 1) {
+							subtask.state = subtask.state === 0 ? 2 : subtask.state;
+						} else if (state === 0) {
+							subtask.state = 0;
+						}
+						if (subtask.subtasks.length > 0) {
+							updateSubtasksState(subtask, state);
+						}
+					}
+				});
 			}
 
 			function deleteSubtask(subtask) {
@@ -501,21 +517,6 @@
 					}
 				}
 				scheduleSave();
-			}
-
-			function updateSubtasksState(task, state) {
-				task.subtasks.forEach(subtask => {
-					if (subtask.state !== 1) {  // Only update if the subtask is not checked
-						if (state === 1) {
-							subtask.state = subtask.state === 0 ? 2 : subtask.state;
-						} else if (state === 0) {
-							subtask.state = 0;
-						}
-						if (subtask.subtasks.length > 0) {
-							updateSubtasksState(subtask, state);
-						}
-					}
-				});
 			}
 
 			function findParentTask(task) {
