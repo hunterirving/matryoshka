@@ -139,7 +139,7 @@
 			right: 25%;
 			top: 50%;
 			height: 2px;
-			background-color: var(--accent-color);
+			background-color: var(--accent);
 			transform: translateY(-50%);
 		}
 	</style>
@@ -354,7 +354,7 @@
 
 				taskInput.addEventListener('keydown', keydownHandler);
 				taskInput.addEventListener('keyup', keyupHandler);
-				taskInput.addEventListener('keydown', copyActiveTaskText);
+				taskInput.addEventListener('keydown', handleCopyAndCut);
 
 				taskInput.addEventListener('input', () => {
 					task.text = taskInput.value;
@@ -632,7 +632,6 @@
 					if (currentIndex > 0) {
 						const prevTask = currentIndex === 1 ? currentTask : tasks[currentIndex - 2];
 						selectAndFocusTask(prevTask);
-						console.log('placing cursor at beginning');
 						placeCursorAtBeginning(currentElement);
 					}
 				} else {
@@ -744,18 +743,38 @@
 				}
 			}
 
-			function copyActiveTaskText(e) {
-				// Check if the key combination is Ctrl+C (Windows) or Cmd+C (Mac)
-				if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+			function handleCopyAndCut(e) {
+				if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'x')) {
 					const activeTaskInput = document.querySelector('.task-container.active input[type="text"]');
 					if (activeTaskInput) {
-						// Check if there's a selection within the active task input
-						const selectedText = activeTaskInput.value.substring(activeTaskInput.selectionStart, activeTaskInput.selectionEnd);
-						
-						const textToCopy = selectedText || activeTaskInput.value;
-						
-						e.preventDefault(); // Prevent default copy behavior
-						navigator.clipboard.writeText(textToCopy);
+						e.preventDefault();
+
+						// If there's no selection, select all text
+						if (activeTaskInput.selectionStart === activeTaskInput.selectionEnd) {
+							activeTaskInput.select();
+						}
+
+						// Use execCommand for copy or cut
+						if (e.key === 'c') {
+							document.execCommand('copy');
+						} else if (e.key === 'x') {
+							document.execCommand('cut');
+
+							// Update the task object
+							const taskContainer = activeTaskInput.closest('.task-container');
+							const taskId = taskContainer.dataset.id;
+							const task = currentTask.id === taskId ? currentTask : currentTask.subtasks.find(t => t.id === taskId);
+							if (task) {
+								task.text = activeTaskInput.value;
+								updateParentTaskState(task);
+								scheduleSave();
+							}
+						}
+
+						// Deselect text if we had to select all
+						if (e.key === 'c' && activeTaskInput.selectionStart === 0 && activeTaskInput.selectionEnd === activeTaskInput.value.length) {
+							activeTaskInput.setSelectionRange(activeTaskInput.value.length, activeTaskInput.value.length);
+						}
 					}
 				}
 			}

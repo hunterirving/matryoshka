@@ -34,7 +34,8 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 
 ### text editing
 - `Left/Right` move text cursor within selected task
-- `Command/Ctrl + C` copy the selected task's text (or highlighted substring)
+- `Command/Ctrl + C` copy the active task's text (or highlighted substring)
+- `Command/Ctrl + X` cut the active task's text (or highlighted substring)
 - `Command/Ctrl + V` paste text content from the clipboard
 - `Command/Ctrl + Z` undo text edit
 - `Command/Ctrl + Shift + Z` redo text edit
