@@ -412,35 +412,95 @@
 			}
 
 			function toggleTaskState(task) {
-				if (task.state === 1) {
-					if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
-						task.state = 0;
-						updateSubtasksState(task, 0);
+			if (task.state === 1) {
+				// Only allow unchecking if not all direct children are checked
+				if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
+					task.state = 0;
+					updateSubtasksState(task, 0);
+					
+					const parent = findParentTask(task);
+					if (parent) {
+						updateTaskAndAncestors(parent);
 					}
-				} else {
-					task.state = 1;
-					updateSubtasksState(task, 1);
+					
+					renderCurrentView();
+					selectAndFocusTask(task);
+					scheduleSave();
 				}
-				updateParentTaskState(task);
+				// If all direct children are checked, do nothing
+			} else {
+				task.state = 1;
+				updateSubtasksState(task, 1);
+				
+				const parent = findParentTask(task);
+				if (parent) {
+					updateTaskAndAncestors(parent);
+				}
+				
 				renderCurrentView();
 				selectAndFocusTask(task);
 				scheduleSave();
 			}
+		}
 
-			function updateParentTaskState(task) {
-				const parent = findParentTask(task);
-				if (parent) {
-					const allChecked = parent.subtasks.every(t => t.state === 1);
-					const anyUnchecked = parent.subtasks.some(t => t.state === 0);
-
-					if (allChecked) {
-						parent.state = 1;
-					} else if (anyUnchecked) {
-						parent.state = 0;
-					}
-
-					updateParentTaskState(parent);
+			//recalculates the state of a task based on its subtasks
+			function recalculateTaskState(task) {
+				if (task.subtasks.length === 0) {
+					return task.state; // If no subtasks, keep current state
 				}
+				const allChecked = task.subtasks.every(t => t.state === 1);
+				const anyUnchecked = task.subtasks.some(t => t.state === 0);
+				if (allChecked) {
+					return 1; // Checked
+				} else if (anyUnchecked) {
+					return 0; // Unchecked
+				}
+			}
+
+			function updateTaskAndAncestors(task) {
+				const newState = recalculateTaskState(task);
+				if (task.state !== newState) {
+					const oldState = task.state;
+					task.state = newState;
+					
+					// If the task changed from checked to unchecked, update its descendants
+					if (oldState === 1 && newState === 0) {
+						updateSubtasksState(task, 0);
+					}
+					
+					const parent = findParentTask(task);
+					if (parent) {
+						updateTaskAndAncestors(parent);
+					}
+				}
+			}
+
+			function deleteSubtask(subtask) {
+				const parentTask = taskPath[taskPath.length - 1];
+				const index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
+
+				if (parentTask.id === 'root' && parentTask.subtasks.length === 1) {
+					return;
+				}
+
+				// Delete the subtask
+				parentTask.subtasks = parentTask.subtasks.filter(t => t.id !== subtask.id);
+
+				// Recalculate parent state and propagate changes
+				updateTaskAndAncestors(parentTask);
+
+				if (parentTask.subtasks.length === 0 && taskPath.length > 1) {
+					navigateToParentTask();
+				} else {
+					renderCurrentView();
+					if (parentTask.subtasks.length > 0) {
+						const targetIndex = Math.max(0, index - 1);
+						selectAndFocusTask(parentTask.subtasks[targetIndex]);
+					} else {
+						selectAndFocusTask(parentTask);
+					}
+				}
+				scheduleSave();
 			}
 
 			function updateSubtasksState(task, state) {
@@ -532,12 +592,7 @@
 					parentTask.subtasks.push(newSubtask);
 				}
 
-				parentTask.state = 0;
-				parentTask.subtasks.forEach(subtask => {
-					if (subtask.state === 2) {
-						subtask.state = 0;
-					}
-				});
+				updateTaskAndAncestors(parentTask);
 
 				renderCurrentView();
 				selectAndFocusTask(newSubtask);
@@ -557,31 +612,6 @@
 				taskInput.setSelectionRange(0, 0);
 			}
 
-			function deleteSubtask(subtask) {
-				const parentTask = taskPath[taskPath.length - 1];
-				const index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
-
-				if (parentTask.id === 'root' && parentTask.subtasks.length === 1) {
-					return;
-				}
-
-				parentTask.subtasks = parentTask.subtasks.filter(t => t.id !== subtask.id);
-				updateParentTaskState(parentTask);
-
-				if (parentTask.subtasks.length === 0 && taskPath.length > 1) {
-					navigateToParentTask();
-				} else {
-					renderCurrentView();
-					if (parentTask.subtasks.length > 0) {
-						const targetIndex = Math.max(0, index - 1);
-						selectAndFocusTask(parentTask.subtasks[targetIndex]);
-					} else {
-						selectAndFocusTask(parentTask);
-					}
-				}
-				scheduleSave();
-			}
-
 			function deleteCurrentParentTask() {
 				if (taskPath.length <= 1) return; // Don't delete root task
 
@@ -596,7 +626,7 @@
 				const index = grandparentTask.subtasks.findIndex(t => t.id === currentParentTask.id);
 
 				grandparentTask.subtasks = grandparentTask.subtasks.filter(t => t.id !== currentParentTask.id);
-				updateParentTaskState(grandparentTask);
+				updateTaskAndAncestors(grandparentTask);
 
 				taskPath.pop(); // Remove the deleted task from the path
 				currentTask = grandparentTask;
@@ -663,7 +693,6 @@
 					const currentTaskId = currentTask.id;
 					taskPath.pop();
 					currentTask = taskPath[taskPath.length - 1];
-					updateParentTaskState(currentTask);
 					updateBreadcrumbs(currentTask);
 					renderCurrentView();
 					const selectedSubtask = currentTask.subtasks.find(t => t.id === currentTaskId);
@@ -760,7 +789,6 @@
 							const task = currentTask.id === taskId ? currentTask : currentTask.subtasks.find(t => t.id === taskId);
 							if (task) {
 								task.text = activeTaskInput.value;
-								updateParentTaskState(task);
 								scheduleSave();
 							}
 						}
