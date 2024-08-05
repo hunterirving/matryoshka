@@ -415,23 +415,11 @@
 				if (task.state === 1) {
 					if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
 						task.state = 0;
-						if (task.subtasks.length > 0) {
-							task.subtasks.forEach(subtask => {
-								if (subtask.state === 2) {
-									subtask.state = 0;
-								}
-							});
-						}
+						updateSubtasksState(task, 0);
 					}
 				} else {
 					task.state = 1;
-					if (task.subtasks.length > 0) {
-						task.subtasks.forEach(subtask => {
-							if (subtask.state === 0) {
-								subtask.state = 2;
-							}
-						});
-					}
+					updateSubtasksState(task, 1);
 				}
 				updateParentTaskState(task);
 				renderCurrentView();
@@ -457,9 +445,15 @@
 
 			function updateSubtasksState(task, state) {
 				task.subtasks.forEach(subtask => {
-					subtask.state = state;
-					if (subtask.subtasks.length > 0) {
-						updateSubtasksState(subtask, state);
+					if (subtask.state !== 1) {  // Only update if the subtask is not checked
+						if (state === 1) {
+							subtask.state = subtask.state === 0 ? 2 : subtask.state;
+						} else if (state === 0) {
+							subtask.state = 0;
+						}
+						if (subtask.subtasks.length > 0) {
+							updateSubtasksState(subtask, state);
+						}
 					}
 				});
 			}
