@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="medieval"> <!-- update to change theme -->
+<html lang="en" data-theme="gak"> <!-- update to change default theme -->
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+	
 	<!-- favicon -->
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪆</text></svg>">
 
@@ -30,13 +30,13 @@
 			--chlorophyll: #5aa83b;
 			--terracotta: #b15c2e;
 
-			--wheat: #D2C3A3;
-			--earth: #4A3C31;
+			--wheat: #d2c3a3;
+			--earth: #4a3c31;
 			--pumpkin: #cb7c52;
-			--tobacco: #7D6C55;
+			--tobacco: #7d6c55;
 
-			--forest: #20302f;
-			--goat-milk:#d8d3c9;
+			--moss: #20302f;
+			--goat-milk: #d8d3c9;
 			--burl: #231f20;
 			--flame: #c63728;
 			
@@ -72,8 +72,8 @@
 			--accent: var(--tobacco);
 		}
 
-		[data-theme="medieval"] {
-			--background: var(--forest);
+		:root[data-theme="medieval"] {
+			--background: var(--moss);
 			--text: var(--goat-milk);
 			--highlight: var(--burl);
 			--accent: var(--flame);
@@ -202,20 +202,23 @@
 		});
 		document.addEventListener('DOMContentLoaded', function() {
 			const appContainer = document.getElementById('app-container');
-			let rootTask = loadFromLocalStorage();
+			let rootTask = loadTasksFromLocalStorage();
 			let currentTask = rootTask;
 			let taskPath = [currentTask];
 			let lastSubtaskDownArrowReleased = false;
 			let saveTimer = null;
+			let currentThemeIndex = 0;
+			let isF2Pressed = false;
+			let themes = [];
 
 			function scheduleSave() {
 				if (saveTimer) {
 					clearTimeout(saveTimer);
 				}
-				saveTimer = setTimeout(saveToLocalStorage, 1000);
+				saveTimer = setTimeout(saveTasksToLocalStorage, 1000);
 			}
 
-			function saveToLocalStorage() {
+			function saveTasksToLocalStorage() {
 				const serializedTasks = serializeTaskTree(taskPath[0]);
 				localStorage.setItem('taskTree', serializedTasks);
 				saveTimer = null;
@@ -233,7 +236,7 @@
 				return serialized;
 			}
 
-			function loadFromLocalStorage() {
+			function loadTasksFromLocalStorage() {
 				const savedTasks = localStorage.getItem('taskTree');
 				if (savedTasks) {
 					return deserializeTaskTree(savedTasks);
@@ -472,7 +475,7 @@
 						selectAndFocusTask(task);
 						scheduleSave();
 					} else {
-						// Animate the checkbox
+						// disallow unchecking and play a 'shake' animation
 						const checkbox = document.querySelector(`.task-container[data-id="${task.id}"] .checkbox-label`);
 						if (checkbox) {
 							checkbox.classList.add('shake');
@@ -865,6 +868,60 @@
 				return parentTask.subtasks[parentTask.subtasks.length - 1].id === task.id;
 			}
 
+			function getThemesFromCSS() {
+				const styleElement = document.querySelector('style');
+				if (styleElement && styleElement.textContent) {
+					const cssText = styleElement.textContent;
+					const themeRegex = /:root\[data-theme="([^"]+)"\]/g;
+					let match;
+					while ((match = themeRegex.exec(cssText)) !== null) {
+						themes.push(match[1]);
+					}
+				}
+			}
+
+			function cycleTheme() {
+				currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+				const newTheme = themes[currentThemeIndex];
+				document.documentElement.setAttribute('data-theme', newTheme);
+				saveThemeToLocalStorage(newTheme);
+			}
+
+			function saveThemeToLocalStorage(theme) {
+				localStorage.setItem('currentTheme', theme);
+			}
+
+			function setInitialTheme() {
+				const savedTheme = localStorage.getItem('currentTheme');
+				const defaultTheme = document.documentElement.getAttribute('data-theme');
+				
+				if (savedTheme && themes.includes(savedTheme)) {
+					currentThemeIndex = themes.indexOf(savedTheme);
+				} else if (themes.includes(defaultTheme)) {
+					currentThemeIndex = themes.indexOf(defaultTheme);
+				} else {
+					currentThemeIndex = 0;
+				}
+				
+				document.documentElement.setAttribute('data-theme', themes[currentThemeIndex]);
+			}
+
+			document.addEventListener('keydown', function(event) {
+				if (event.key === 'F2' && !isF2Pressed) {
+					event.preventDefault();
+					isF2Pressed = true;
+					cycleTheme();
+				}
+			});
+
+			document.addEventListener('keyup', function(event) {
+				if (event.key === 'F2') {
+					isF2Pressed = false;
+				}
+			});
+
+			getThemesFromCSS();
+			setInitialTheme();
 			renderCurrentView();
 			selectFirstSubtask();
 		});

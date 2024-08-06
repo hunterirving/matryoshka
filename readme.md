@@ -40,6 +40,60 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - `Command/Ctrl + Z` undo text edit
 - `Command/Ctrl + Shift + Z` redo text edit
 
+## themes
+Press `F2` to cycle through available themes.
+
+To create a new theme, add a CSS rule set with the following form to the `<style>` tag in index.html:
+
+```css
+:root[data-theme="sunflower"] {
+	--background: var(--pollen);
+	--text: var(--loam);
+	--highlight: var(--chlorophyll);
+	--accent: var(--terracotta);
+}
+```
+
+You can also use themes to set custom fonts, etc:
+
+``` css
+:root[data-theme="medieval"] {
+	--background: var(--moss);
+	--text: var(--goat-milk);
+	--highlight: var(--burl);
+	--accent: var(--flame);
+	& input[type="text"] {
+		font-family: 'MedievalSharp';
+		src: url('MedievalSharp-Regular.ttf') format('truetype');
+	}
+}
+```
+
+You can add named colors to the `:root` selector at the top of the `<style>` tag:
+
+```css
+:root {
+	--pollen: #f4a127;
+	--loam: #5a352b;
+	--chlorophyll: #5aa83b;
+	--terracotta: #b15c2e;
+
+	--wheat: #d2c3a3;
+	--earth: #4a3c31;
+	--pumpkin: #cb7c52;
+	--tobacco: #7d6c55;
+
+	--moss: #20302f;
+	--goat-milk: #d8d3c9;
+	--burl: #231f20;
+	--flame: #c63728;
+
+	.
+	.
+	.
+}
+```
+
 ## data persistence
 your task tree is automatically saved to your browser's local storage. this ensures your tasks will persist even if you close the browser or refresh the page. note that clearing your browser data may erase your saved tasks.
 
@@ -49,5 +103,7 @@ this application is designed to run on modern web browsers with javascript enabl
 ## privacy
 all data is stored locally on your machine. no data is sent to or stored on any external servers.
 
-## license
-this project is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/LICENSE">GNU general public license v3.0</a>.
+## licenses
+this project is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/LICENSE">GNU General Public License v3.0</a>.
+
+the Medieval Sharp font by <a href="http://www.identifont.com/show?3DQU">Wojciech Kalinowski</a> is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/OFL.txt">SIL Open Font License, version 1.1</a>.
