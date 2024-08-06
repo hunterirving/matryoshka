@@ -7,34 +7,20 @@
 	<title>todo</title>
 	<style>
 		:root {
-			--tomato-soup: #FF6347;
-			--forest: #3CB371;
-			--mint: #00a88a;
- 
-			--slime: #ccff00;
-			--grape: #7700ff;
 			--snow: #ffffff;
 			--coal: #000000;
+			--slime: #ccff00;
+			--grape: #7700ff;
 
-			--chocolate: #59311a;
-			--strawberry: #ffd1dc;
-			--vanilla: #f3eedc;
+			--murk: #8e9918;
+			--tadpole: #27350f;
+			--lilypad: #6f8823;
+			--reed: #4a5d23;
 
-			--acorn: #5a352b;
-			--butternut-squash: #f4a127;
-			--goldenrod: #eeba30;
-			--olive: #4c620c;
-			--pumpkin: #e5771e;
-
-			--primordial-soup: #8e9918;
-			--clay: #58473d;
-			--lichen: #b1b893;
-			--amber: #b76700;
-			
-			--algae: #4a5d23;
-			--seaweed: #2e8b57;
-			--kelp: #769830;
-			--spirogyra: #9acd32;
+			--loam: #5a352b;
+			--honey: #f4a127;
+			--chlorophyll: #5aa83b;
+			--terracotta: #cc5638;
 		}
 
 		:root[data-theme="gak"] {
@@ -44,11 +30,18 @@
 			--accent: var(--grape);
 		}
 
-		:root[data-theme="harvest"] {
-			--background: var(--goldenrod);
-			--text: var(--acorn);
-			--highlight: var(--butternut-squash);
-			--accent: var(--olive);
+		:root[data-theme="swamp"] {
+			--background: var(--murk);
+			--text: var(--tadpole);
+			--highlight: var(--lilypad);
+			--accent: var(--reed);
+		}
+
+		:root[data-theme="sunflower"] {
+			--background: var(--honey);
+			--text: var(--loam);
+			--highlight: var(--chlorophyll);
+			--accent: var(--terracotta);
 		}
 
 		@keyframes shake {
@@ -115,6 +108,7 @@
 			font-size: 24px;
 			margin-bottom: 10px;
 			color: var(--text);
+			user-select: none;
 		}
 		.custom-checkbox {
 			display: none;
