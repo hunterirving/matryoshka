@@ -51,6 +51,19 @@
 			--accent: var(--olive);
 		}
 
+		@keyframes shake {
+			0% { transform: translateX(0); }
+			20% { transform: translateX(3px); }
+			40% { transform: translateX(-3px); }
+			60% { transform: translateX(3px); }
+			80% { transform: translateX(-3px); }
+			100% { transform: translateX(0); }
+		}
+
+		.shake {
+			animation: shake 0.3s ease-in-out;
+		}
+
 		body {
 			font-family: Arial, sans-serif;
 			max-width: 800px;
@@ -412,11 +425,33 @@
 			}
 
 			function toggleTaskState(task) {
-			if (task.state === 1) {
-				// if all direct children are checked, disallow unchecking
-				if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
-					task.state = 0;
-					updateSubtasksState(task, 0);
+				if (task.state === 1) {
+					// if all direct children are checked, disallow unchecking
+					if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
+						task.state = 0;
+						updateSubtasksState(task, 0);
+						
+						const parent = findParentTask(task);
+						if (parent) {
+							updateTaskAndAncestors(parent);
+						}
+						
+						renderCurrentView();
+						selectAndFocusTask(task);
+						scheduleSave();
+					} else {
+						// Animate the checkbox
+						const checkbox = document.querySelector(`.task-container[data-id="${task.id}"] .checkbox-label`);
+						if (checkbox) {
+							checkbox.classList.add('shake');
+							setTimeout(() => {
+								checkbox.classList.remove('shake');
+							}, 300); // Remove class after animation completes
+						}
+					}
+				} else {
+					task.state = 1;
+					updateSubtasksState(task, 1);
 					
 					const parent = findParentTask(task);
 					if (parent) {
@@ -427,21 +462,7 @@
 					selectAndFocusTask(task);
 					scheduleSave();
 				}
-				// If all direct children are checked, do nothing
-			} else {
-				task.state = 1;
-				updateSubtasksState(task, 1);
-				
-				const parent = findParentTask(task);
-				if (parent) {
-					updateTaskAndAncestors(parent);
-				}
-				
-				renderCurrentView();
-				selectAndFocusTask(task);
-				scheduleSave();
 			}
-		}
 
 			//recalculates the state of a task based on its subtasks
 			function recalculateTaskState(task) {
