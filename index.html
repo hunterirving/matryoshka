@@ -1,33 +1,54 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="gak"> <!-- update to change theme -->
+<html lang="en" data-theme="medieval"> <!-- update to change theme -->
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- favicon -->
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪆</text></svg>">
+
+	<!-- fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+
 	<title>todo</title>
 	<style>
 		:root {
-			--snow: #ffffff;
-			--coal: #000000;
-			--slime: #ccff00;
-			--grape: #7700ff;
+			--coconut: #ffffff;
+			--licorice: #000000;
+			--wasabi: #ccff00;
+			--eggplant: #7700ff;
 
 			--murk: #8e9918;
 			--tadpole: #27350f;
 			--lilypad: #6f8823;
 			--reed: #4a5d23;
 
+			--pollen: #f4a127;
 			--loam: #5a352b;
-			--honey: #f4a127;
 			--chlorophyll: #5aa83b;
-			--terracotta: #cc5638;
+			--terracotta: #b15c2e;
+
+			--wheat: #D2C3A3;
+			--earth: #4A3C31;
+			--pumpkin: #cb7c52;
+			--tobacco: #7D6C55;
+
+			--forest: #20302f;
+			--goat-milk:#d8d3c9;
+			--burl: #231f20;
+			--flame: #c63728;
+			
+			--mushroom: #bab496;
+			--blood: #3e1815;
 		}
 
 		:root[data-theme="gak"] {
-			--background: var(--snow);
-			--text: var(--coal);
-			--highlight: var(--slime);
-			--accent: var(--grape);
+			--background: var(--coconut);
+			--text: var(--licorice);
+			--highlight: var(--wasabi);
+			--accent: var(--eggplant);
 		}
 
 		:root[data-theme="swamp"] {
@@ -38,10 +59,27 @@
 		}
 
 		:root[data-theme="sunflower"] {
-			--background: var(--honey);
+			--background: var(--pollen);
 			--text: var(--loam);
 			--highlight: var(--chlorophyll);
 			--accent: var(--terracotta);
+		}
+
+		:root[data-theme="harvest"] {
+			--background: var(--wheat);
+			--text: var(--earth);
+			--highlight: var(--pumpkin);
+			--accent: var(--tobacco);
+		}
+
+		[data-theme="medieval"] {
+			--background: var(--forest);
+			--text: var(--goat-milk);
+			--highlight: var(--burl);
+			--accent: var(--flame);
+			& input[type="text"] {
+				font-family: "MedievalSharp";
+			}
 		}
 
 		@keyframes shake {
