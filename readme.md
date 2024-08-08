@@ -9,7 +9,7 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - unlimited subtask depth
 - intuitive keyboard controls for rapid navigation
 - automatic saving using browser's local storage
-- complete offline functionality
+- works completely offline
 
 ### quickstart
 1. press the `Enter` key to add subtasks to the root "todo" task
@@ -29,13 +29,13 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - `Enter` add a new task
 - `Arrow Down` (on last subtask) add a new task at the bottom of the list
 - `Backspace` (when selected task's text is empty) remove the task and its subtasks
-- `Shift + Enter` toggle task completion status (status changes cascade to subtasks)
+- `Shift + Enter` toggle selected task's completion status
 - `Shift + Arrow Up/Down` reposition the selected task within its current level
 
 ### text editing
 - `Left/Right` move text cursor within selected task
-- `Command/Ctrl + C` copy the active task's text (or highlighted substring)
-- `Command/Ctrl + X` cut the active task's text (or highlighted substring)
+- `Command/Ctrl + C` copy the selected task's text (or highlighted substring)
+- `Command/Ctrl + X` cut the selected task's text (or highlighted substring)
 - `Command/Ctrl + V` paste text content from the clipboard
 - `Command/Ctrl + Z` undo text edit
 - `Command/Ctrl + Shift + Z` redo text edit
@@ -43,7 +43,7 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 ## themes
 press `F2` to cycle through available themes.
 
-to create a new theme, add a CSS rule set with the following form to index.html:
+to create a new theme, add a CSS ruleset with the following structure to index.html:
 
 ```css
 :root[data-theme="sunflower"] {
@@ -69,7 +69,7 @@ You can also use themes to set custom fonts, etc:
 }
 ```
 
-You can add named colors to the `:root` selector at the top of the `<style>` tag:
+You can store named colors in the `:root` selector at the top of the `<style>` tag:
 
 ```css
 :root {
@@ -106,4 +106,4 @@ all data is stored locally on your machine. no data is sent to or stored on any 
 ## licenses
 this project is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/LICENSE">GNU General Public License v3.0</a>.
 
-the Medieval Sharp font by <a href="http://www.identifont.com/show?3DQU">Wojciech Kalinowski</a> is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/OFL.txt">SIL Open Font License, version 1.1</a>.
+the MedievalSharp font by <a href="http://www.identifont.com/show?3DQU">Wojciech Kalinowski</a> is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/OFL.txt">SIL Open Font License, version 1.1</a>.
