@@ -41,9 +41,9 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - `Command/Ctrl + Shift + Z` redo text edit
 
 ## themes
-Press `F2` to cycle through available themes.
+press `F2` to cycle through available themes.
 
-To create a new theme, add a CSS rule set with the following form to the `<style>` tag in index.html:
+to create a new theme, add a CSS rule set with the following form to index.html:
 
 ```css
 :root[data-theme="sunflower"] {

@@ -92,7 +92,7 @@
 		}
 
 		.shake {
-			animation: shake 0.3s ease-in-out;
+			animation: shake 0.25s ease-out;
 		}
 
 		body {
@@ -325,6 +325,7 @@
 				const taskInput = document.createElement('input');
 				taskInput.type = 'text';
 				taskInput.value = task.text;
+				taskInput.setAttribute('autocomplete', 'off');
 
 				taskInput.addEventListener('mousedown', function(e) {
 					e.stopPropagation();
@@ -481,7 +482,7 @@
 							checkbox.classList.add('shake');
 							setTimeout(() => {
 								checkbox.classList.remove('shake');
-							}, 300); // Remove class after animation completes
+							}, 250); // Remove class after animation completes
 						}
 					}
 				} else {
