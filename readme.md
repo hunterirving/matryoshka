@@ -63,8 +63,7 @@ You can also use themes to set custom fonts, etc:
 	--highlight: var(--burl);
 	--accent: var(--flame);
 	& input[type="text"] {
-		font-family: 'MedievalSharp';
-		src: url('MedievalSharp-Regular.ttf') format('truetype');
+		font-family: MedievalSharp;
 	}
 }
 ```

@@ -9,6 +9,7 @@
 
 	<title>todo</title>
 	<style>
+		/* custom colors */
 		:root {
 			--coconut: #ffffff;
 			--licorice: #000000;
@@ -39,6 +40,13 @@
 			--blood: #3e1815;
 		}
 
+		/* custom fonts */
+		@font-face {
+			font-family: MedievalSharp;
+			src: url('MedievalSharp-Regular.ttf') format('truetype');
+		}
+
+		/* themes */
 		:root[data-theme="gak"] {
 			--background: var(--coconut);
 			--text: var(--licorice);
@@ -73,11 +81,11 @@
 			--highlight: var(--burl);
 			--accent: var(--flame);
 			& input[type="text"] {
-				font-family: 'MedievalSharp';
-				src: url('MedievalSharp-Regular.ttf') format('truetype');
+				font-family: MedievalSharp;
 			}
 		}
 
+		/* interface styling */
 		@keyframes shake {
 			0% { transform: translateX(0); }
 			20% { transform: translateX(3px); }
@@ -86,11 +94,9 @@
 			80% { transform: translateX(-3px); }
 			100% { transform: translateX(0); }
 		}
-
 		.shake {
 			animation: shake 0.25s ease-out;
 		}
-
 		body {
 			font-family: Arial, sans-serif;
 			max-width: 800px;
@@ -496,7 +502,6 @@
 				}
 			}
 
-			//recalculates the state of a task based on its subtasks
 			function recalculateTaskState(task) {
 				if (task.subtasks.length === 0) {
 					return task.state; // If no subtasks, keep current state
