@@ -241,6 +241,8 @@
 			function loadTasksFromLocalStorage() {
 				const savedTasks = localStorage.getItem('taskTree');
 				if (savedTasks) {
+					console.log('%cloaded tasks from local storage:', "color: green;");
+					console.log(savedTasks);
 					return deserializeTaskTree(savedTasks);
 				} else {
 					return { id: 'root', text: 'todo', state: 0, subtasks: [{ id: Date.now(), text: '', state: 0, subtasks: [] }], selectedSubtaskId: null };
@@ -348,6 +350,9 @@
 								} else {
 									deleteSubtask(task);
 								}
+							} else {
+								// Attempting to delete root task
+								applyShakeAnimation(task.id);
 							}
 						} else if (taskInput.value !== '') {
 							keyHandler.backspace.canDelete = false;
@@ -464,7 +469,6 @@
 
 			function toggleTaskState(task) {
 				if (task.state === 1) {
-					// if all direct children are checked, disallow unchecking
 					if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
 						task.state = 0;
 						updateSubtasksState(task, 0);
@@ -479,13 +483,7 @@
 						scheduleSave();
 					} else {
 						// disallow unchecking and play a 'shake' animation
-						const checkbox = document.querySelector(`.task-container[data-id="${task.id}"] .checkbox-label`);
-						if (checkbox) {
-							checkbox.classList.add('shake');
-							setTimeout(() => {
-								checkbox.classList.remove('shake');
-							}, 250); // Remove class after animation completes
-						}
+						applyShakeAnimation(task.id);
 					}
 				} else {
 					task.state = 1;
@@ -499,6 +497,16 @@
 					renderCurrentView();
 					selectAndFocusTask(task);
 					scheduleSave();
+				}
+			}
+
+			function applyShakeAnimation(taskId) {
+				const checkbox = document.querySelector(`.task-container[data-id="${taskId}"] .checkbox-label`);
+				if (checkbox) {
+					checkbox.classList.add('shake');
+					setTimeout(() => {
+						checkbox.classList.remove('shake');
+					}, 250); // Remove class after animation completes
 				}
 			}
 
@@ -554,6 +562,8 @@
 				const index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
 
 				if (parentTask.id === 'root' && parentTask.subtasks.length === 1) {
+					// Disallow deletion of the root task's sole remaining child
+					applyShakeAnimation(subtask.id);
 					return;
 				}
 
@@ -575,6 +585,42 @@
 					}
 				}
 				scheduleSave();
+			}
+
+			function deleteCurrentParentTask() {
+				if (taskPath.length <= 1) return; // Don't delete root task
+
+				const currentParentTask = taskPath[taskPath.length - 1];
+				const grandparentTask = taskPath[taskPath.length - 2];
+
+				// Check if we're trying to delete the sole child of the root
+				if (grandparentTask.id === 'root' && grandparentTask.subtasks.length === 1) {
+					// Don't allow deletion of the sole child of root
+					applyShakeAnimation(currentParentTask.id);
+					return;
+				}
+
+				const index = grandparentTask.subtasks.findIndex(t => t.id === currentParentTask.id);
+
+				grandparentTask.subtasks = grandparentTask.subtasks.filter(t => t.id !== currentParentTask.id);
+				updateTaskAndAncestors(grandparentTask);
+
+				taskPath.pop(); // Remove the deleted task from the path
+				currentTask = grandparentTask;
+
+				if (grandparentTask.subtasks.length === 0 && taskPath.length > 1) {
+					// If we've just deleted the last subtask, navigate up another level
+					navigateToParentTask();
+				} else {
+					renderCurrentView();
+					if (grandparentTask.subtasks.length > 0) {
+						// Select the subtask before the deleted one, or the one after if at the start
+						const targetIndex = Math.max(0, index - 1);
+						selectAndFocusTask(grandparentTask.subtasks[targetIndex]);
+					} else {
+						selectAndFocusTask(grandparentTask);
+					}
+				}
 			}
 
 			function findParentTask(task) {
@@ -669,40 +715,6 @@
 
 			function placeCursorAtBeginning(taskInput) {
 				taskInput.setSelectionRange(0, 0);
-			}
-
-			function deleteCurrentParentTask() {
-				if (taskPath.length <= 1) return; // Don't delete root task
-
-				const currentParentTask = taskPath[taskPath.length - 1];
-				const grandparentTask = taskPath[taskPath.length - 2];
-
-				// Check if we're trying to delete the sole child of the root
-				if (grandparentTask.id === 'root' && grandparentTask.subtasks.length === 1) {
-					return; // Don't allow deletion of the sole child of root
-				}
-
-				const index = grandparentTask.subtasks.findIndex(t => t.id === currentParentTask.id);
-
-				grandparentTask.subtasks = grandparentTask.subtasks.filter(t => t.id !== currentParentTask.id);
-				updateTaskAndAncestors(grandparentTask);
-
-				taskPath.pop(); // Remove the deleted task from the path
-				currentTask = grandparentTask;
-
-				if (grandparentTask.subtasks.length === 0 && taskPath.length > 1) {
-					// If we've just deleted the last subtask, navigate up another level
-					navigateToParentTask();
-				} else {
-					renderCurrentView();
-					if (grandparentTask.subtasks.length > 0) {
-						// Select the subtask before the deleted one, or the one after if at the start
-						const targetIndex = Math.max(0, index - 1);
-						selectAndFocusTask(grandparentTask.subtasks[targetIndex]);
-					} else {
-						selectAndFocusTask(grandparentTask);
-					}
-				}
 			}
 
 			function navigateTasks(direction) {
