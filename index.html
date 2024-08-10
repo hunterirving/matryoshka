@@ -664,7 +664,6 @@
 					e.preventDefault();
 					if (!keyHandler.shiftLeft.pressed) {
 						keyHandler.shiftLeft.pressed = true;
-						placeCursorAtBeginning(e.target);
 						navigateToParentTask();
 					}
 				}
@@ -726,13 +725,13 @@
 				if (direction === 'up') {
 					if (currentIndex > 0) {
 						const prevTask = currentIndex === 1 ? currentTask : tasks[currentIndex - 2];
-						selectAndFocusTask(prevTask);
 						placeCursorAtBeginning(currentElement);
+						selectAndFocusTask(prevTask);
 					}
 				} else {
 					if (currentIndex < tasks.length) {
-						selectAndFocusTask(tasks[currentIndex]);
 						placeCursorAtBeginning(currentElement);
+						selectAndFocusTask(tasks[currentIndex]);
 					}
 				}
 				lastSubtaskDownArrowReleased = false;
