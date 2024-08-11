@@ -2,6 +2,8 @@
 
 a nested task manager that breaks complex tasks into manageable subtasks.
 
+<img src="screenshot.gif" width="100%" style="max-width: 880px;"><br>
+
 <i>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</i>
 <br>(physical keyboard required (for now))
 
