@@ -2,9 +2,9 @@
 
 a nested task manager that breaks complex tasks into manageable subtasks.
 
-<a href="https://hunterirving.github.io/matryoshka/"><img src="screenshot.gif" width="500px"></a><br>
+<a href="https://hunterirving.github.io/matryoshka/"><img src="screenshot.gif" width="560px"></a><br>
 
-<i>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</i>
+<b><i>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</i></b>
 <br>(physical keyboard required (for now))
 
 ### key features
