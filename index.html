@@ -411,6 +411,9 @@
 				taskInput.addEventListener('keydown', keydownHandler);
 				taskInput.addEventListener('keyup', keyupHandler);
 				taskInput.addEventListener('keydown', handleCopyAndCut);
+				taskInput.addEventListener('blur', function() {
+					placeCursorAtBeginning(this);
+				});
 
 				taskInput.addEventListener('input', () => {
 					task.text = taskInput.value;
@@ -704,6 +707,11 @@
 			}
 
 			function selectAndFocusTask(task) {
+				const activeInput = document.querySelector('.task-container.active input[type="text"]');
+				if (activeInput) {
+					placeCursorAtBeginning(activeInput);
+				}
+
 				const taskInput = document.querySelector(`.task-container[data-id="${task.id}"] input[type="text"]`);
 				if (taskInput) {
 					taskInput.focus();
@@ -712,8 +720,8 @@
 				}
 			}
 
-			function placeCursorAtBeginning(taskInput) {
-				taskInput.setSelectionRange(0, 0);
+			function placeCursorAtBeginning(input) {
+				input.setSelectionRange(0, 0);
 			}
 
 			function navigateTasks(direction) {
@@ -725,12 +733,10 @@
 				if (direction === 'up') {
 					if (currentIndex > 0) {
 						const prevTask = currentIndex === 1 ? currentTask : tasks[currentIndex - 2];
-						placeCursorAtBeginning(currentElement);
 						selectAndFocusTask(prevTask);
 					}
 				} else {
 					if (currentIndex < tasks.length) {
-						placeCursorAtBeginning(currentElement);
 						selectAndFocusTask(tasks[currentIndex]);
 					}
 				}
