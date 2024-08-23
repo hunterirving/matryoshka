@@ -408,8 +408,14 @@
 				taskInput.addEventListener('keydown', keydownHandler);
 				taskInput.addEventListener('keyup', keyupHandler);
 				taskInput.addEventListener('keydown', handleCopyAndCut);
-				taskInput.addEventListener('blur', function() {
-					placeCursorAtBeginning(this);
+				appContainer.addEventListener('focusin', function(e) {
+					if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+						document.querySelectorAll('input[type="text"]').forEach(input => {
+							if (input !== e.target) {
+								placeCursorAtBeginning(input);
+							}
+						});
+					}
 				});
 
 				taskInput.addEventListener('input', () => {
@@ -704,11 +710,6 @@
 			}
 
 			function selectAndFocusTask(task) {
-				const activeInput = document.querySelector('.task-container.active input[type="text"]');
-				if (activeInput) {
-					placeCursorAtBeginning(activeInput);
-				}
-
 				const taskInput = document.querySelector(`.task-container[data-id="${task.id}"] input[type="text"]`);
 				if (taskInput) {
 					taskInput.focus();
