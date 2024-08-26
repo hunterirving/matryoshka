@@ -210,6 +210,63 @@
 			let isF2Pressed = false;
 			let themes = [];
 
+			function handleSave(e) {
+				if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+					e.preventDefault();
+					saveTaskTreeToFile();
+				}
+			}
+
+			function saveTaskTreeToFile() {
+				const serializedTasks = serializeTaskTree(taskPath[0]);
+				const rootTaskName = taskPath[0].text || 'Untitled';
+				const date = new Date();
+				const fileName = `${rootTaskName} - ${date.toLocaleString('default', { month: 'short' }).toLowerCase()} ${date.getDate()}, '${date.getFullYear().toString().slice(-2)}.txt`;
+				
+				const blob = new Blob([serializedTasks], { type: 'text/plain' });
+				const url = URL.createObjectURL(blob);
+				
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = fileName;
+				a.click();
+				
+				URL.revokeObjectURL(url);
+			}
+
+			function handleOpen(e) {
+				if ((e.metaKey || e.ctrlKey) && e.key === 'o') {
+					e.preventDefault();
+					openTaskTreeFromFile();
+				}
+			}
+
+			function openTaskTreeFromFile() {
+				const input = document.createElement('input');
+				input.type = 'file';
+				input.accept = '.txt';
+				input.onchange = function(event) {
+					const file = event.target.files[0];
+					const reader = new FileReader();
+					reader.onload = function(e) {
+						try {
+							const newRootTask = deserializeTaskTree(e.target.result);
+							if (confirm('Are you sure you want to overwrite the existing task tree?')) {
+								rootTask = newRootTask;
+								currentTask = rootTask;
+								taskPath = [currentTask];
+								renderCurrentView();
+								saveTasksToLocalStorage();
+							}
+						} catch (error) {
+							alert(`Error importing task tree: ${error.message}`);
+						}
+					};
+					reader.readAsText(file);
+				};
+				input.click();
+			}
+
 			function scheduleSave() {
 				if (saveTimer) {
 					clearTimeout(saveTimer);
@@ -937,6 +994,9 @@
 					isF2Pressed = false;
 				}
 			});
+
+			document.addEventListener('keydown', handleSave);
+            document.addEventListener('keydown', handleOpen);
 
 			getThemesFromCSS();
 			setInitialTheme();
