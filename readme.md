@@ -100,7 +100,7 @@ You can store named colors in the `:root` selector at the top of the `<style>` t
 }
 ```
 
-## data persistences
+## data persistence
 your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
 
 **⚠️ warning:** clearing your browsing data may erase your saved tasks. use the [export feature](#importingexporting) to create a backup before clearing your browsing data.
