@@ -14,7 +14,7 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - works completely offline
 
 ### quickstart
-1. press the `Enter` key to add subtasks to the root "todo" task
+1. press the `Return` / `Enter` key to add subtasks to the root "todo" task
 2. give each new subtask a meaningful name
 3. use `Shift + Arrow Right` to navigate into a subtask
 4. use `Shift + Arrow Left` to return to the parent task
@@ -42,11 +42,11 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - `Command/Ctrl + Z` undo text edit
 - `Command/Ctrl + Shift + Z` redo text edit
 
-### importing/exporting
+### importing / exporting
 your task tree is automatically saved to your browser's [local storage](#data-persistence) after each edit. for manual backups or cross-device use:
 
-- `Command/Ctrl + S` export task tree to .txt file
-- `Command/Ctrl + O` import task tree from .txt file
+- `Command/Ctrl + S` export tasks to .txt file
+- `Command/Ctrl + O` import tasks from .txt file
 ## themes
 press `F2` to cycle through available themes.
 
