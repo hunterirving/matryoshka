@@ -9,9 +9,9 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 
 ### key features
 - unlimited subtask depth
-- intuitive keyboard controls for rapid navigation
+- intuitive keyboard controls
 - automatic saving using browser's local storage
-- works completely offline
+- "single html file" architecture that works completely offline
 
 ### quickstart
 1. press the `Return` / `Enter` key to add subtasks to the root "todo" task
@@ -42,11 +42,14 @@ a nested task manager that breaks complex tasks into manageable subtasks.
 - `Command/Ctrl + Z` undo text edit
 - `Command/Ctrl + Shift + Z` redo text edit
 
-### importing / exporting
-your task tree is automatically saved to your browser's [local storage](#data-persistence) after each edit. for manual backups or cross-device use:
+## data persistence
+your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
+
+**⚠️ warning:** clearing your browsing data may erase your saved tasks. to avoid losing progress, create a manual backup before clearing your browsing data:
 
 - `Command/Ctrl + S` export tasks to .txt file
 - `Command/Ctrl + O` import tasks from .txt file
+
 ## themes
 press `F2` to cycle through available themes.
 
@@ -100,13 +103,8 @@ You can store named colors in the `:root` selector at the top of the `<style>` t
 }
 ```
 
-## data persistence
-your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
-
-**⚠️ warning:** clearing your browsing data may erase your saved tasks. use the [export feature](#importingexporting) to create a manual backup before clearing your browsing data.
-
 ## browser compatibility
-this application is designed to run on modern web browsers with javascript enabled. mobile browsers are supported, but a physical keyboard is required (for now).
+this application is designed to run on modern web browsers with javascript enabled. mobile browsers are technically supported, but a physical keyboard is required (for now).
 
 ## privacy
 all data is stored locally on your machine. no data is sent to or stored on any external servers.
