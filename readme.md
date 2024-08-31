@@ -2,7 +2,8 @@
 
 <a href="https://hunterirving.github.io/matryoshka/"><img src="screenshot.gif" width="700px"></a><br>
 
-turn mountains into molehills (then molehills into anthills) with <b>matryoshka</b>, the nested task manager that breaks complex tasks into manageable subtasks.
+turn mountains into molehills (then molehills into anthills) with <b>matryoshka</b>,<br>
+the nested task manager that breaks complex tasks into manageable subtasks.
 
 <i><b>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</b></i> (physical keyboard required)
 
