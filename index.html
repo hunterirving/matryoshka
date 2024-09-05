@@ -35,12 +35,22 @@
 			--goat-milk: #d8d3c9;
 			--burl: #231f20;
 			--flame: #c63728;
+
+			--soot: #181a1b;
+			--smoke: #e8e6e3;
+			--ash: #252829;
+			--cinder: #ff5532;
 		}
 
 		/* custom fonts */
 		@font-face {
 			font-family: MedievalSharp;
-			src: url('MedievalSharp-Regular.ttf') format('truetype');
+			src: url('resources/fonts/MedievalSharp-Regular.ttf') format('truetype');
+		}
+
+		@font-face {
+			font-family: BasteleurMoonlight;
+			src: url('resources/fonts/Basteleur-Moonlight.ttf') format('truetype');
 		}
 
 		/* themes */
@@ -79,6 +89,19 @@
 			--accent: var(--flame);
 			& input[type="text"] {
 				font-family: MedievalSharp;
+			}
+		}
+		
+		:root[data-theme="woodstove"] {
+			--background: var(--soot);
+			--text: var(--smoke);
+			--highlight: var(--ash);
+			--accent: var(--cinder);
+			& input[type="text"] {
+				font-family: BasteleurMoonlight;
+			}
+			.parent-task {
+				--text: var(--cinder)
 			}
 		}
 

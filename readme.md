@@ -1,6 +1,6 @@
 # 🪆 matryoshka
 
-<a href="https://hunterirving.github.io/matryoshka/"><img src="screenshot.gif" width="700px"></a><br>
+<a href="https://hunterirving.github.io/matryoshka/"><img src="resources/images/screenshot.gif" width="700px"></a><br>
 
 turn mountains into molehills (then molehills into anthills) with <b>matryoshka</b>,<br>
 the nested task manager that breaks complex tasks into manageable subtasks.
@@ -110,6 +110,8 @@ this application is designed to run on modern web browsers with javascript enabl
 all data is stored locally on your machine. no data is sent to or stored on any external servers.
 
 ## licenses
-this project is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/LICENSE">GNU General Public License v3.0</a>.
+this project is licensed under the <a href="/LICENSE.txt">GNU General Public License v3.0</a>.
 
-the MedievalSharp font by <a href="http://www.identifont.com/show?3DQU">Wojciech Kalinowski</a> is licensed under the <a href="https://github.com/hunterirving/matryoshka/blob/main/OFL.txt">SIL Open Font License, version 1.1</a>.
+the MedievalSharp font by <a href="http://www.identifont.com/show?3DQU">Wojciech Kalinowski</a> is licensed under the <a href="/resources/fonts/LICENSE (MedievalSharp).txt">SIL Open Font License, version 1.1</a>.
+
+the Basteleur font by <a href="https://keussel.studio/">Keussel</a> (distributed by <a href="https://velvetyne.fr/">Velvetyne</a>) is licensed under the <a href="/resources/fonts/LICENSE (Basteleur Moonlight).txt">SIL Open Font License, version 1.1</a>.
