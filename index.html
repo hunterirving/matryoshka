@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json">
-	<meta id="themeColor" name="theme-color" content="var(--background)">
+	<meta id="themeColor" name="theme-color" content="#ccff00">
 
 	<!-- favicon -->
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪆</text></svg>">
@@ -1006,12 +1006,18 @@
 			function cycleTheme() {
 				currentThemeIndex = (currentThemeIndex + 1) % themes.length;
 				const newTheme = themes[currentThemeIndex];
-				document.documentElement.setAttribute('data-theme', newTheme);
+				setTheme(newTheme);
 				saveThemeToLocalStorage(newTheme);
 			}
 
 			function saveThemeToLocalStorage(theme) {
 				localStorage.setItem('currentTheme', theme);
+			}
+
+			function setTheme(theme) {
+				document.documentElement.setAttribute('data-theme', theme);
+				const backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--background').trim();
+				document.getElementById('themeColor').setAttribute('content', backgroundColor);
 			}
 
 			function setInitialTheme() {
@@ -1026,7 +1032,7 @@
 					currentThemeIndex = 0;
 				}
 				
-				document.documentElement.setAttribute('data-theme', themes[currentThemeIndex]);
+				setTheme(themes[currentThemeIndex]);
 			}
 
 			document.addEventListener('keydown', function(event) {
@@ -1044,7 +1050,7 @@
 			});
 
 			document.addEventListener('keydown', handleSave);
-            document.addEventListener('keydown', handleOpen);
+			document.addEventListener('keydown', handleOpen);
 
 			getThemesFromCSS();
 			setInitialTheme();
