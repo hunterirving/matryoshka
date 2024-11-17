@@ -10,6 +10,6 @@
 	],
 	"start_url": "/matryoshka/",
 	"display": "standalone",
-	"background_color": "#ffffff",
-	"theme_color": "#ffffff"
+	"background_color": "transparent",
+	"theme_color": "transparent"
 }
