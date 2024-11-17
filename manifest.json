@@ -1,0 +1,15 @@
+{
+	"name": "matryoshka",
+	"short_name": "matryoshka",
+	"icons": [
+		{
+			"src": "resources/icons/icon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml"
+		}
+	],
+	"start_url": "/matryoshka/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#ffffff"
+}
