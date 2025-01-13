@@ -142,11 +142,17 @@
 		.shake {
 			animation: shake 0.25s ease-out;
 		}
+		html {
+			scroll-behavior: smooth;
+			overscroll-behavior: none;
+			-ms-overflow-style: none;
+			scrollbar-width: none;
+		}
 		body {
 			font-family: Arial, sans-serif;
 			max-width: 800px;
 			margin: 0 auto;
-			padding: 20px;
+			padding: 0px 20px 20px 20px;
 			background-color: var(--background);
 			color: var(--text);
 		}
@@ -184,6 +190,13 @@
 		}
 		.active {
 			background-color: var(--highlight);
+		}
+		.sticky-header {
+			position: sticky;
+			top: 0;
+			background-color: var(--background);
+			z-index: 1;
+			padding-top: 20px;
 		}
 		.parent-task {
 			font-size: 1.5em;
@@ -908,11 +921,20 @@
 				appContainer.innerHTML = '';
 				currentTask = taskPath[taskPath.length - 1];
 
-				updateBreadcrumbs(currentTask);
-				updatePageTitle(currentTask);
+				const stickyHeader = document.createElement('div');
+				stickyHeader.className = 'sticky-header';
+
+				const breadcrumbsElement = document.createElement('div');
+				breadcrumbsElement.id = 'breadcrumbs';
+				stickyHeader.appendChild(breadcrumbsElement);
 
 				const parentElement = createTaskElement(currentTask, true);
-				appContainer.appendChild(parentElement);
+				stickyHeader.appendChild(parentElement);
+
+				appContainer.appendChild(stickyHeader);
+
+				const subtasksContainer = document.createElement('div');
+				subtasksContainer.id = 'subtasks-container';
 
 				const subtasksList = document.createElement('ul');
 				currentTask.subtasks.forEach(subtask => {
@@ -920,7 +942,11 @@
 					li.appendChild(createTaskElement(subtask));
 					subtasksList.appendChild(li);
 				});
-				appContainer.appendChild(subtasksList);
+				subtasksContainer.appendChild(subtasksList);
+				appContainer.appendChild(subtasksContainer);
+
+				updateBreadcrumbs(currentTask);
+				updatePageTitle(currentTask);
 
 				const parentCheckbox = parentElement.querySelector('input[type="checkbox"]');
 				updateCheckboxState(parentCheckbox, currentTask.state);
@@ -1060,7 +1086,6 @@
 	</script>
 </head>
 <body>
-	<div id="breadcrumbs"></div>
 	<div id="app-container"></div>
 </body>
 </html>
