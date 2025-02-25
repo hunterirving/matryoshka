@@ -782,6 +782,9 @@
 						keyHandler.shiftRight.pressed = true;
 						if (task !== currentTask) {
 							navigateIntoSubtask(task);
+						} else {
+							// Apply shake animation when trying to navigate into the parent task
+							applyShakeAnimation(task.id);
 						}
 					}
 				} else if (e.key === 'ArrowLeft' && e.shiftKey) {
