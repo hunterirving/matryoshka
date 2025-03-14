@@ -45,7 +45,8 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 ## data persistence
 your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
 
-**⚠️ warning:** clearing your browsing data may erase your saved tasks. to avoid losing progress, create a manual backup before clearing your browsing data:
+> [!WARNING]  
+> Clearing your browsing data may erase your saved tasks. To avoid losing progress, create a manual backup before clearing your browsing data.
 
 - `Command/Ctrl + S` export tasks to .txt file
 - `Command/Ctrl + O` import tasks from .txt file
