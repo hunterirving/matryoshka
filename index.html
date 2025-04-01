@@ -912,6 +912,19 @@
 				updateBreadcrumbs(task);
 				lastSubtaskDownArrowReleased = isLastSubtask(task);
 				input.focus();
+				
+				// Center the active task in the viewport
+				setTimeout(() => {
+					const activeTaskElement = document.querySelector('.task-container.active');
+					if (activeTaskElement && activeTaskElement.parentElement && activeTaskElement.parentElement.tagName === 'LI') {
+						// Use scrollIntoView with block: "center" to center the element vertically
+						activeTaskElement.scrollIntoView({
+							behavior: 'auto',  // Use 'auto' for immediate scrolling
+							block: 'center',   // Center vertically
+							inline: 'nearest'  // Don't change horizontal scroll
+						});
+					}
+				}, 10);
 			}
 
 			function updateBreadcrumbs(selectedTask) {
