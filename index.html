@@ -261,6 +261,10 @@
 			}
 		});
 		document.addEventListener('DOMContentLoaded', function() {
+				// Variables for scroll handling
+				let lastScrollPosition = 0;
+				let isScrolling = false;
+				let scrollDebounceTimer;
 			const appContainer = document.getElementById('app-container');
 			let rootTask = loadTasksFromLocalStorage();
 			let currentTask = rootTask;
@@ -1093,6 +1097,79 @@
 
 			document.addEventListener('keydown', handleSave);
 			document.addEventListener('keydown', handleOpen);
+			
+			// Add scroll handling to navigate tasks with inertia
+			window.addEventListener('wheel', handleScroll, { passive: false });
+			
+			// Scroll inertia implementation
+			const scrollState = {
+				momentum: 0,
+				isAnimating: false,
+				lastScrollTime: Date.now(),
+				scrollAccumulator: 0,
+				taskNavigationThreshold: 250  // Pixels needed to move one task
+			};
+			
+			function handleScroll(e) {
+				// Prevent the default scroll behavior
+				e.preventDefault();
+				
+				// Get scroll delta and update time
+				const now = Date.now();
+				const timeDelta = now - scrollState.lastScrollTime;
+				scrollState.lastScrollTime = now;
+				
+				// Calculate momentum (higher for faster scrolls)
+				const rawDelta = e.deltaY || e.detail || -e.wheelDelta;
+				const delta = Math.sign(rawDelta) * Math.min(Math.abs(rawDelta), 100);  // Cap delta
+				
+				// Add to momentum based on time between scrolls (faster scrolls = more momentum)
+				if (timeDelta < 100) {
+					// Rapid scrolling gets more momentum
+					scrollState.momentum += delta * (1 + (100 - timeDelta) / 100);
+				} else {
+					// Slower scrolling gets normal momentum
+					scrollState.momentum += delta;
+				}
+				
+				// Start animation if not already running
+				if (!scrollState.isAnimating) {
+					scrollState.isAnimating = true;
+					animateMomentumScroll();
+				}
+			}
+			
+			function animateMomentumScroll() {
+				// If momentum is close to zero, stop animation
+				if (Math.abs(scrollState.momentum) < 0.5) {
+					scrollState.momentum = 0;
+					scrollState.isAnimating = false;
+					return;
+				}
+				
+				// Add momentum to accumulator
+				scrollState.scrollAccumulator += scrollState.momentum;
+				
+				// Check if we've crossed the threshold to move tasks
+				if (Math.abs(scrollState.scrollAccumulator) >= scrollState.taskNavigationThreshold) {
+					const tasksToMove = Math.floor(Math.abs(scrollState.scrollAccumulator) / scrollState.taskNavigationThreshold);
+					const direction = scrollState.scrollAccumulator > 0 ? 'down' : 'up';
+					
+					// Move the specified number of tasks
+					for (let i = 0; i < tasksToMove; i++) {
+						navigateTasks(direction);
+					}
+					
+					// Remove the used part from accumulator
+					scrollState.scrollAccumulator = scrollState.scrollAccumulator % scrollState.taskNavigationThreshold;
+				}
+				
+				// Apply friction to slow down momentum (adjust factor for feel)
+				scrollState.momentum *= 0.6;
+				
+				// Continue animation
+				requestAnimationFrame(animateMomentumScroll);
+			}
 
 			getThemesFromCSS();
 			setInitialTheme();
