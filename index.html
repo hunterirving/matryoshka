@@ -144,9 +144,10 @@
 		}
 		html {
 			scroll-behavior: smooth;
-			overscroll-behavior: none;
-			-ms-overflow-style: none;
-			scrollbar-width: none;
+			overflow-y: scroll;
+			overflow-x: hidden;
+			scrollbar-width: auto;
+			scrollbar-color: var(--text) var(--background);
 		}
 		body {
 			font-family: Arial, sans-serif;
