@@ -47,12 +47,20 @@
 			--cola: #1e1515;
 			--bubblegum: #e11761;
 			--taffy: #eaeaea;
+
+			--midnight: #151920;
+			--green-apple: #00b000;
 		}
 
 		/* custom fonts */
 		@font-face {
 			font-family: BasteleurMoonlight;
 			src: url('resources/fonts/Basteleur-Moonlight.ttf') format('truetype');
+		}
+
+		@font-face {
+			font-family: ElectrolizeRegular;
+			src: url('resources/fonts/Electrolize-Regular.ttf') format('truetype');
 		}
 
 		/* themes */
@@ -124,6 +132,29 @@
 			}
 			& input[type="text"] {
 				text-shadow: 1px 1px 1px var(--cola);
+			}
+			input[type="text"]::selection {
+				color: var(--text);
+			}
+		}
+
+		:root[data-theme="hacksburg"] {
+			--background: var(--midnight);
+			--text: var(--coconut);
+			--highlight: var(--licorice);
+			--accent: var(--green-apple);
+			& input[type="text"] {
+				font-family: ElectrolizeRegular;
+				font-weight: 200;
+			}
+			.checkbox-label {
+				border-radius: 10px;
+			}
+			.custom-checkbox:checked + .checkbox-label::before {
+				display: none;
+			}
+			& input[type="text"] {
+				text-shadow: 1px 1px 1px var(--licorice);
 			}
 			input[type="text"]::selection {
 				color: var(--text);
