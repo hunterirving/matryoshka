@@ -866,6 +866,9 @@
 			}
 
 			function navigateIntoSubtask(subtask) {
+				// Temporarily disable smooth scrolling
+				document.documentElement.style.scrollBehavior = 'auto';
+				
 				if (subtask.subtasks.length > 0) {
 					currentTask.selectedSubtaskId = subtask.id;
 					taskPath.push(subtask);
@@ -889,6 +892,9 @@
 
 			function navigateToParentTask() {
 				if (taskPath.length > 1) {
+					// Temporarily disable smooth scrolling
+					document.documentElement.style.scrollBehavior = 'auto';
+					
 					const currentTaskId = currentTask.id;
 					taskPath.pop();
 					currentTask = taskPath[taskPath.length - 1];
@@ -917,17 +923,20 @@
 				input.focus();
 				
 				// Center the active task in the viewport
-				setTimeout(() => {
-					const activeTaskElement = document.querySelector('.task-container.active');
-					if (activeTaskElement && activeTaskElement.parentElement && activeTaskElement.parentElement.tagName === 'LI') {
-						// Use scrollIntoView with block: "center" to center the element vertically
-						activeTaskElement.scrollIntoView({
-							behavior: 'auto',  // Use 'auto' for immediate scrolling
-							block: 'center',   // Center vertically
-							inline: 'nearest'  // Don't change horizontal scroll
-						});
-					}
-				}, 10);
+				const activeTaskElement = document.querySelector('.task-container.active');
+				if (activeTaskElement && activeTaskElement.parentElement && activeTaskElement.parentElement.tagName === 'LI') {
+					// Use scrollIntoView with block: "center" to center the element vertically
+					activeTaskElement.scrollIntoView({
+						behavior: 'auto',  // Use 'auto' for immediate scrolling
+						block: 'center',   // Center vertically
+						inline: 'nearest'  // Don't change horizontal scroll
+					});
+					
+					// Re-enable smooth scrolling after all DOM updates and scrolling are complete
+					setTimeout(() => {
+						document.documentElement.style.scrollBehavior = 'smooth';
+					}, 200);
+				}
 			}
 
 			function updateBreadcrumbs(selectedTask) {
