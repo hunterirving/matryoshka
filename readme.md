@@ -108,8 +108,7 @@ You can store named colors in the `:root` selector at the top of the `<style>` t
 this application is designed to run on modern, desktop web browsers with javascript enabled. mobile browsers are technically supported, but a physical keyboard is required (for now).
 
 ## privacy
-all data is stored locally on your machine.
-no data is sent to or stored on any external servers.
+all data is stored locally on your machine.<br>no data is sent to or stored on any external servers.
 
 ## licenses
 this project is licensed under the <a href="/LICENSE.txt">GNU General Public License v3.0</a>.
