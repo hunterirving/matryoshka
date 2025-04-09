@@ -105,7 +105,7 @@ You can store named colors in the `:root` selector at the top of the `<style>` t
 ```
 
 ## browser compatibility
-this application is designed to run on modern web browsers with javascript enabled. mobile browsers are technically supported, but a physical keyboard is required (for now).
+this application is designed to run on modern, desktop web browsers with javascript enabled. mobile browsers are technically supported, but a physical keyboard is required (for now).
 
 ## privacy
 all data is stored locally on your machine. no data is sent to or stored on any external servers.
