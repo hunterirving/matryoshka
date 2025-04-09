@@ -11,7 +11,7 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - unlimited subtask depth
 - intuitive keyboard controls
 - automatic saving using browser's local storage
-- "single html file" architecture that works completely offline
+- portable, "single html file" architecture that works completely offline
 
 ### quickstart
 1. press the `Return` / `Enter` key to add subtasks to the root "todo" task
