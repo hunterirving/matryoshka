@@ -46,7 +46,7 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
 
 > [!WARNING]  
-> Clearing your browsing data may erase your saved tasks. To avoid losing progress, create a manual backup before clearing your browsing data.
+> clearing your browsing data may erase your saved tasks. to avoid losing progress, create a manual backup before clearing your browsing data.
 
 - `Command/Ctrl + S` export tasks to .txt file
 - `Command/Ctrl + O` import tasks from .txt file
@@ -65,7 +65,7 @@ to create a new theme, add a CSS ruleset with the following structure to index.h
 }
 ```
 
-You can also use themes to set custom fonts, etc:
+you can also use themes to set custom fonts, etc:
 
 ``` css
 :root[data-theme="medieval"] {
@@ -74,12 +74,12 @@ You can also use themes to set custom fonts, etc:
 	--highlight: var(--burl);
 	--accent: var(--flame);
 	& input[type="text"] {
-		font-family: MedievalSharp;
+		font-family: BasteleurMoonlight;
 	}
 }
 ```
 
-You can store named colors in the `:root` selector at the top of the `<style>` tag:
+you can store named colors in the `:root` selector at the top of the `<style>` tag:
 
 ```css
 :root {
@@ -105,7 +105,7 @@ You can store named colors in the `:root` selector at the top of the `<style>` t
 ```
 
 ## browser compatibility
-this application is designed to run on modern, desktop web browsers with javascript enabled. mobile browsers are technically supported, but a physical keyboard is required (for now).
+this application is designed to run on modern, desktop web browsers with javascript enabled.<br>mobile browsers are technically supported, but a physical keyboard is required (for now).
 
 ## privacy
 all data is stored locally on your machine.<br>no data is sent to or stored on any external servers.
