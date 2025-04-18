@@ -115,4 +115,4 @@ this project is licensed under the <a href="/LICENSE.txt">GNU General Public Lic
 
 the Basteleur font by <a href="https://keussel.studio/">Keussel</a> (distributed by <a href="https://velvetyne.fr/">Velvetyne</a>) is licensed under the <a href="/resources/fonts/LICENSE (Basteleur Moonlight).txt">SIL Open Font License, version 1.1</a>.
 
-the Electrolize font by <a href="https://fonts.google.com/?query=Gaslight">Gaslight</a> is licensed under the <a href="/resources/fonts/LICENSE (Electrolize Regular).txt"> SIL Open Font License, version 1.1</a>
+the Electrolize font by <a href="https://fonts.google.com/?query=Gaslight">Gaslight</a> is licensed under the <a href="/resources/fonts/LICENSE (Electrolize Regular).txt"> SIL Open Font License, version 1.1</a>.
