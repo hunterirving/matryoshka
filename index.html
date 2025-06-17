@@ -48,19 +48,15 @@
 			--bubblegum: #e11761;
 			--taffy: #eaeaea;
 
-			--midnight: #151920;
-			--green-apple: #00b000;
+			--muscat: #663399;
+			--cask: #722f37;
+			--bloom: #f8f6ff;
 		}
 
 		/* custom fonts */
 		@font-face {
 			font-family: BasteleurMoonlight;
 			src: url('resources/fonts/Basteleur-Moonlight.ttf') format('truetype');
-		}
-
-		@font-face {
-			font-family: ElectrolizeRegular;
-			src: url('resources/fonts/Electrolize-Regular.ttf') format('truetype');
 		}
 
 		/* themes */
@@ -145,28 +141,62 @@
 			}
 		}
 
-		:root[data-theme="hacksburg"] {
-			--background: var(--midnight);
-			--text: var(--coconut);
-			--highlight: var(--licorice);
-			--accent: var(--green-apple);
-			--icon: '🛠️';
+		:root[data-theme="vineyard"] {
+			--background: var(--bloom);
+			--text: var(--cask);
+			--highlight: var(--muscat);
+			--accent: var(--muscat);
+			--icon: '🍇';
 			& input[type="text"] {
-				font-family: ElectrolizeRegular;
-				font-weight: 200;
+				font-family: BasteleurMoonlight;
+			}
+			.active {
+				border-radius: 30px 0px 0px 30px;
+			}
+			.active input[type="text"] {
+				color: var(--bloom);
+				text-shadow: 1px 1px 2px black;
 			}
 			.checkbox-label {
-				border-radius: 10px;
+				border-radius: 50%;
+				border: none;
+				background: radial-gradient(circle at 30% 30%, #d4a5d8, #b19cd9, #8a4baf);
+				box-shadow: 
+					inset 1px 1px 3px rgba(0,0,0,0.4),
+					inset -1px -1px 2px rgba(255,255,255,0.3),
+					0 1px 2px rgba(0,0,0,0.3);
+			}
+			.custom-checkbox:checked + .checkbox-label {
+				background: radial-gradient(circle at 30% 30%, #b19cd9, #8a4baf, #663399);
+				box-shadow: 
+					inset -2px -2px 4px rgba(0,0,0,0.3),
+					inset 1px 1px 2px rgba(255,255,255,0.5),
+					0 2px 4px rgba(0,0,0,0.2);
+			}
+			.active .custom-checkbox:checked + .checkbox-label {
+				box-shadow: 
+					inset -2px -2px 4px rgba(0,0,0,0.3),
+					inset 1px 1px 2px rgba(255,255,255,0.5),
+					3px 3px 6px rgba(0,0,0,0.6);
 			}
 			.custom-checkbox:checked + .checkbox-label::before {
 				display: none;
 			}
-			& input[type="text"] {
-				text-shadow: 1px 1px 1px var(--licorice);
+			.custom-checkbox:indeterminate + .checkbox-label::before {
+				content: '';
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				width: 50%;
+				height: 50%;
+				border-radius: 50%;
+				background: radial-gradient(circle at 30% 30%, #b19cd9, #8a4baf, #663399);
+				box-shadow: 
+					inset -1px -1px 2px rgba(0,0,0,0.3),
+					inset 0.5px 0.5px 1px rgba(255,255,255,0.5);
+				transform: translate(-50%, -50%);
 			}
-			input[type="text"]::selection {
-				color: var(--text);
-			}
+			scrollbar-color: var(--muscat) var(--bloom);
 		}
 
 		/* interface styling */
