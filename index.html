@@ -930,7 +930,16 @@
 			}
 
 			function navigateToParentTask() {
-				if (taskPath.length > 1) {
+				// Check if the current active parent task is the root
+				if (currentTask.id === 'root') {
+					// We're at root level - cannot navigate out, apply shake animation to active task
+					const activeTaskElement = document.querySelector('.task-container.active');
+					if (activeTaskElement) {
+						const taskId = activeTaskElement.dataset.id;
+						applyShakeAnimation(taskId);
+					}
+				} else if (taskPath.length > 1) {
+					// Normal navigation out - we're deeper than root level
 					// Temporarily disable smooth scrolling
 					document.documentElement.style.scrollBehavior = 'auto';
 					
