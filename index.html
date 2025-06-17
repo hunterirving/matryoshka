@@ -287,6 +287,30 @@
 			background-color: var(--accent);
 			transform: translateY(-50%);
 		}
+
+		/* print styles */
+		@media print {
+			body * {
+				visibility: hidden;
+			}
+			#print-content, #print-content * {
+				visibility: visible;
+			}
+			#print-content {
+				position: absolute;
+				left: 0;
+				top: 0;
+				font-family: monospace;
+				font-size: 12pt;
+				line-height: 1.4;
+				white-space: pre-wrap;
+				color: black;
+				background: white;
+			}
+			#app-container {
+				display: none;
+			}
+		}
 	</style>
 	<script>
 		document.addEventListener('click', function(e) {
@@ -1165,7 +1189,33 @@
 			
 			// Add scroll handler to block default scroll behavior
 			window.addEventListener('wheel', handleScroll, { passive: false });
+
+			// Add print handler
+			window.addEventListener('beforeprint', handleBeforePrint);
+			window.addEventListener('afterprint', handleAfterPrint);
 			
+			function handleBeforePrint() {
+				// Create print content div if it doesn't exist
+				let printContent = document.getElementById('print-content');
+				if (!printContent) {
+					printContent = document.createElement('div');
+					printContent.id = 'print-content';
+					document.body.appendChild(printContent);
+				}
+				
+				// Generate the serialized task tree for current parent task and its descendants
+				const serializedTasks = serializeTaskTree(currentTask);
+				printContent.textContent = serializedTasks;
+			}
+
+			function handleAfterPrint() {
+				// Clean up print content
+				const printContent = document.getElementById('print-content');
+				if (printContent) {
+					printContent.remove();
+				}
+			}
+
 			function handleScroll(e) {
 				// Prevent the default scroll behavior
 				e.preventDefault();
