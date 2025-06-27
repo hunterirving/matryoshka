@@ -1003,15 +1003,22 @@
 				updateTaskAndAncestors(currentParent);
 				updateTaskAndAncestors(grandParent);
 
-				// Navigate to the outer layer (grandparent level)
-				taskPath.pop(); // Remove current level
-				currentTask = taskPath[taskPath.length - 1]; // Set to grandparent
-
-				// Re-render the view
-				renderCurrentView();
-
-				// Focus on the moved subtask in its new location
-				selectAndFocusTask(subtask);
+				// Handle view and selection based on remaining tasks at current level
+				if (currentParent.subtasks.length === 0 && taskPath.length > 1) {
+					// No remaining subtasks, navigate to parent level
+					navigateToParentTask();
+				} else {
+					// Stay at current level and select adjacent task
+					renderCurrentView();
+					if (currentParent.subtasks.length > 0) {
+						// Select the task that was above the moved one, or below if at the top
+						const targetIndex = Math.max(0, currentIndex - 1);
+						selectAndFocusTask(currentParent.subtasks[targetIndex]);
+					} else {
+						// Focus on the parent task if no subtasks remain
+						selectAndFocusTask(currentParent);
+					}
+				}
 
 				scheduleSave();
 			}
