@@ -871,6 +871,12 @@
 				} else if (e.key === 'ArrowDown' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('down');
+				} else if (e.key === 'ArrowUp' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+					e.preventDefault();
+					pushSubtaskIntoTarget(task, 'up');
+				} else if (e.key === 'ArrowDown' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+					e.preventDefault();
+					pushSubtaskIntoTarget(task, 'down');
 				} else if (e.key === 'ArrowUp' && e.shiftKey) {
 					e.preventDefault();
 					moveSubtask(task, 'up');
@@ -912,6 +918,48 @@
 
 				renderCurrentView();
 				selectAndFocusTask(subtask);
+				scheduleSave();
+			}
+
+			function pushSubtaskIntoTarget(subtask, direction) {
+				// Don't allow pushing the current parent task
+				if (subtask === currentTask) {
+					return;
+				}
+
+				const parentTask = findParentTask(subtask);
+				if (!parentTask) return;
+
+				const index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
+				if (index === -1) return;
+
+				let targetTask = null;
+				if (direction === 'up' && index > 0) {
+					targetTask = parentTask.subtasks[index - 1];
+				} else if (direction === 'down' && index < parentTask.subtasks.length - 1) {
+					targetTask = parentTask.subtasks[index + 1];
+				}
+
+				if (!targetTask) return;
+
+				// Remove the subtask from its current parent
+				parentTask.subtasks.splice(index, 1);
+
+				// Add the subtask to the target task's subtasks
+				targetTask.subtasks.push(subtask);
+
+				// Update parent task state after removal
+				updateTaskAndAncestors(parentTask);
+
+				// Update target task state after addition
+				updateTaskAndAncestors(targetTask);
+
+				// Re-render the view
+				renderCurrentView();
+
+				// Focus on the target task that now contains the moved subtask
+				selectAndFocusTask(targetTask);
+
 				scheduleSave();
 			}
 
