@@ -894,6 +894,9 @@
 							applyShakeAnimation(task.id);
 						}
 					}
+				} else if (e.key === 'ArrowLeft' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+					e.preventDefault();
+					pullSubtaskOutLayer(task);
 				} else if (e.key === 'ArrowLeft' && e.shiftKey) {
 					e.preventDefault();
 					if (!keyHandler.shiftLeft.pressed) {
@@ -961,6 +964,67 @@
 				selectAndFocusTask(targetTask);
 
 				scheduleSave();
+			}
+
+			function pullSubtaskOutLayer(subtask) {
+				// Don't allow pulling the current parent task
+				if (subtask === currentTask) {
+					return;
+				}
+
+				// Don't allow pulling when at root level
+				if (taskPath.length <= 1) {
+					return;
+				}
+
+				const currentParent = findParentTask(subtask);
+				if (!currentParent) return;
+
+				// Find the grandparent (the outer layer we're pulling into)
+				const grandParent = findGrandParentTask(currentParent);
+				if (!grandParent) return;
+
+				// Remove the subtask from its current parent
+				const currentIndex = currentParent.subtasks.findIndex(t => t.id === subtask.id);
+				if (currentIndex === -1) return;
+				currentParent.subtasks.splice(currentIndex, 1);
+
+				// Find where to insert in the grandparent's subtasks
+				const currentParentIndex = grandParent.subtasks.findIndex(t => t.id === currentParent.id);
+				if (currentParentIndex === -1) {
+					// Fallback: add to end of grandparent's subtasks
+					grandParent.subtasks.push(subtask);
+				} else {
+					// Insert after the current parent's position
+					grandParent.subtasks.splice(currentParentIndex + 1, 0, subtask);
+				}
+
+				// Update task states
+				updateTaskAndAncestors(currentParent);
+				updateTaskAndAncestors(grandParent);
+
+				// Navigate to the outer layer (grandparent level)
+				taskPath.pop(); // Remove current level
+				currentTask = taskPath[taskPath.length - 1]; // Set to grandparent
+
+				// Re-render the view
+				renderCurrentView();
+
+				// Focus on the moved subtask in its new location
+				selectAndFocusTask(subtask);
+
+				scheduleSave();
+			}
+
+			function findGrandParentTask(parentTask) {
+				// Find the grandparent of the given parent task
+				for (let i = taskPath.length - 1; i >= 0; i--) {
+					const potentialGrandParent = taskPath[i];
+					if (potentialGrandParent.subtasks.some(t => t.id === parentTask.id)) {
+						return potentialGrandParent;
+					}
+				}
+				return null;
 			}
 
 			function addNewSubtask(parentTask, currentSubtask = null) {
