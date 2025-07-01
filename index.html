@@ -865,18 +865,18 @@
 						keyHandler.shiftEnter.pressed = true;
 						toggleTaskState(task);
 					}
+				} else if (e.key === 'ArrowUp' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+					e.preventDefault();
+					pushSubtaskIntoTarget(task, 'up');
+				} else if (e.key === 'ArrowDown' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+					e.preventDefault();
+					pushSubtaskIntoTarget(task, 'down');
 				} else if (e.key === 'ArrowUp' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('up');
 				} else if (e.key === 'ArrowDown' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('down');
-				} else if (e.key === 'ArrowUp' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
-					e.preventDefault();
-					pushSubtaskIntoTarget(task, 'up');
-				} else if (e.key === 'ArrowDown' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
-					e.preventDefault();
-					pushSubtaskIntoTarget(task, 'down');
 				} else if (e.key === 'ArrowUp' && e.shiftKey) {
 					e.preventDefault();
 					moveSubtask(task, 'up');
@@ -894,7 +894,7 @@
 							applyShakeAnimation(task.id);
 						}
 					}
-				} else if (e.key === 'ArrowLeft' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+				} else if (e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
 					e.preventDefault();
 					pullSubtaskOutLayer(task);
 				} else if (e.key === 'ArrowLeft' && e.shiftKey) {

@@ -33,14 +33,16 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `Backspace` (when selected task's text is empty) remove the task and its subtasks
 - `Shift + Enter` toggle selected task's completion status
 - `Shift + Arrow Up/Down` reposition the selected task within its current level
+- `⌘ + Arrow Up/Down` move the selected task into the task above/below it
+- `⌘ + Arrow Left` pull the selected task out one level (to its parent's level)
 
 ### text editing
 - `Left/Right` move text cursor within selected task
-- `Command/Ctrl + C` copy the selected task's text (or highlighted substring)
-- `Command/Ctrl + X` cut the selected task's text (or highlighted substring)
-- `Command/Ctrl + V` paste text content from the clipboard
-- `Command/Ctrl + Z` undo text edit
-- `Command/Ctrl + Shift + Z` redo text edit
+- `⌘ + C` copy the selected task's text (or highlighted substring)
+- `⌘ + X` cut the selected task's text (or highlighted substring)
+- `⌘ + V` paste text content from the clipboard
+- `⌘ + Z` undo text edit
+- `⌘ + Shift + Z` redo text edit
 
 ## data persistence
 your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
@@ -48,8 +50,8 @@ your task tree is automatically saved to your browser's local storage after each
 > [!WARNING]  
 > clearing your browsing data may erase your saved tasks. to avoid losing progress, create a manual backup before clearing your browsing data.
 
-- `Command/Ctrl + S` export tasks to .txt file
-- `Command/Ctrl + O` import tasks from .txt file
+- `⌘ + S` export tasks to .txt file
+- `⌘ + O` import tasks from .txt file
 
 ## themes
 press `F2` to cycle through available themes.
