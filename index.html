@@ -865,12 +865,27 @@
 						keyHandler.shiftEnter.pressed = true;
 						toggleTaskState(task);
 					}
+				} else if (e.key === 'ArrowUp' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+					e.preventDefault();
+					pushSubtaskIntoTarget(task, 'up');
+				} else if (e.key === 'ArrowDown' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+					e.preventDefault();
+					pushSubtaskIntoTarget(task, 'down');
 				} else if (e.key === 'ArrowUp' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('up');
 				} else if (e.key === 'ArrowDown' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('down');
+				} else if (e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+					e.preventDefault();
+					pullSubtaskOutLayerAndNavigate(task);
+				} else if (e.key === 'ArrowUp' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+					e.preventDefault();
+					pushSubtaskIntoTargetAndNavigate(task, 'up');
+				} else if (e.key === 'ArrowDown' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+					e.preventDefault();
+					pushSubtaskIntoTargetAndNavigate(task, 'down');
 				} else if (e.key === 'ArrowUp' && e.shiftKey) {
 					e.preventDefault();
 					moveSubtask(task, 'up');
@@ -888,6 +903,9 @@
 							applyShakeAnimation(task.id);
 						}
 					}
+				} else if (e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+					e.preventDefault();
+					pullSubtaskOutLayer(task);
 				} else if (e.key === 'ArrowLeft' && e.shiftKey) {
 					e.preventDefault();
 					if (!keyHandler.shiftLeft.pressed) {
@@ -913,6 +931,204 @@
 				renderCurrentView();
 				selectAndFocusTask(subtask);
 				scheduleSave();
+			}
+
+			function pushSubtaskIntoTarget(subtask, direction) {
+				// Don't allow pushing the current parent task
+				if (subtask === currentTask) {
+					return;
+				}
+
+				const parentTask = findParentTask(subtask);
+				if (!parentTask) return;
+
+				const index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
+				if (index === -1) return;
+
+				let targetTask = null;
+				if (direction === 'up' && index > 0) {
+					targetTask = parentTask.subtasks[index - 1];
+				} else if (direction === 'down' && index < parentTask.subtasks.length - 1) {
+					targetTask = parentTask.subtasks[index + 1];
+				}
+
+				if (!targetTask) return;
+
+				// Remove the subtask from its current parent
+				parentTask.subtasks.splice(index, 1);
+
+				// Add the subtask to the target task's subtasks
+				targetTask.subtasks.push(subtask);
+
+				// Update parent task state after removal
+				updateTaskAndAncestors(parentTask);
+
+				// Update target task state after addition
+				updateTaskAndAncestors(targetTask);
+
+				// Re-render the view
+				renderCurrentView();
+
+				// Focus on the target task that now contains the moved subtask
+				selectAndFocusTask(targetTask);
+
+				scheduleSave();
+			}
+
+			function pushSubtaskIntoTargetAndNavigate(subtask, direction) {
+				// Don't allow pushing the current parent task
+				if (subtask === currentTask) {
+					return;
+				}
+
+				// Temporarily disable smooth scrolling
+				document.documentElement.style.scrollBehavior = 'auto';
+
+				const parentTask = findParentTask(subtask);
+				if (!parentTask) return;
+
+				const index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
+				if (index === -1) return;
+
+				let targetTask = null;
+				if (direction === 'up' && index > 0) {
+					targetTask = parentTask.subtasks[index - 1];
+				} else if (direction === 'down' && index < parentTask.subtasks.length - 1) {
+					targetTask = parentTask.subtasks[index + 1];
+				}
+
+				if (!targetTask) return;
+
+				// Remove the subtask from its current parent
+				parentTask.subtasks.splice(index, 1);
+
+				// Add the subtask to the target task's subtasks
+				targetTask.subtasks.push(subtask);
+
+				// Update parent task state after removal
+				updateTaskAndAncestors(parentTask);
+
+				// Update target task state after addition
+				updateTaskAndAncestors(targetTask);
+
+				// Navigate into the target task and select the moved subtask
+				navigateIntoTaskAndSelectSubtask(targetTask, subtask);
+
+				scheduleSave();
+			}
+
+			function pullSubtaskOutLayer(subtask) {
+				// Don't allow pulling the current parent task
+				if (subtask === currentTask) {
+					return;
+				}
+
+				// Don't allow pulling when at root level
+				if (taskPath.length <= 1) {
+					return;
+				}
+
+				const currentParent = findParentTask(subtask);
+				if (!currentParent) return;
+
+				// Find the grandparent (the outer layer we're pulling into)
+				const grandParent = findGrandParentTask(currentParent);
+				if (!grandParent) return;
+
+				// Remove the subtask from its current parent
+				const currentIndex = currentParent.subtasks.findIndex(t => t.id === subtask.id);
+				if (currentIndex === -1) return;
+				currentParent.subtasks.splice(currentIndex, 1);
+
+				// Find where to insert in the grandparent's subtasks
+				const currentParentIndex = grandParent.subtasks.findIndex(t => t.id === currentParent.id);
+				if (currentParentIndex === -1) {
+					// Fallback: add to end of grandparent's subtasks
+					grandParent.subtasks.push(subtask);
+				} else {
+					// Insert after the current parent's position
+					grandParent.subtasks.splice(currentParentIndex + 1, 0, subtask);
+				}
+
+				// Update task states
+				updateTaskAndAncestors(currentParent);
+				updateTaskAndAncestors(grandParent);
+
+				// Handle view and selection based on remaining tasks at current level
+				if (currentParent.subtasks.length === 0 && taskPath.length > 1) {
+					// No remaining subtasks, navigate to parent level and select the moved task
+					navigateToParentTaskAndSelectTask(subtask);
+				} else {
+					// Stay at current level and select adjacent task
+					renderCurrentView();
+					if (currentParent.subtasks.length > 0) {
+						// Select the task that was above the moved one, or below if at the top
+						const targetIndex = Math.max(0, currentIndex - 1);
+						selectAndFocusTask(currentParent.subtasks[targetIndex]);
+					} else {
+						// Focus on the parent task if no subtasks remain
+						selectAndFocusTask(currentParent);
+					}
+				}
+
+				scheduleSave();
+			}
+
+			function pullSubtaskOutLayerAndNavigate(subtask) {
+				// Don't allow pulling the current parent task
+				if (subtask === currentTask) {
+					return;
+				}
+
+				// Don't allow pulling when at root level
+				if (taskPath.length <= 1) {
+					return;
+				}
+
+				// Temporarily disable smooth scrolling
+				document.documentElement.style.scrollBehavior = 'auto';
+
+				const currentParent = findParentTask(subtask);
+				if (!currentParent) return;
+
+				// Find the grandparent (the outer layer we're pulling into)
+				const grandParent = findGrandParentTask(currentParent);
+				if (!grandParent) return;
+
+				// Remove the subtask from its current parent
+				const currentIndex = currentParent.subtasks.findIndex(t => t.id === subtask.id);
+				if (currentIndex === -1) return;
+				currentParent.subtasks.splice(currentIndex, 1);
+
+				// Find where to insert in the grandparent's subtasks
+				const currentParentIndex = grandParent.subtasks.findIndex(t => t.id === currentParent.id);
+				if (currentParentIndex === -1) {
+					// Fallback: add to end of grandparent's subtasks
+					grandParent.subtasks.push(subtask);
+				} else {
+					// Insert after the current parent's position
+					grandParent.subtasks.splice(currentParentIndex + 1, 0, subtask);
+				}
+
+				// Update task states
+				updateTaskAndAncestors(currentParent);
+				updateTaskAndAncestors(grandParent);
+
+				// Always navigate to parent level and select the moved task
+				navigateToParentTaskAndSelectTask(subtask);
+
+				scheduleSave();
+			}
+
+			function findGrandParentTask(parentTask) {
+				// Find the grandparent of the given parent task
+				for (let i = taskPath.length - 1; i >= 0; i--) {
+					const potentialGrandParent = taskPath[i];
+					if (potentialGrandParent.subtasks.some(t => t.id === parentTask.id)) {
+						return potentialGrandParent;
+					}
+				}
+				return null;
 			}
 
 			function addNewSubtask(parentTask, currentSubtask = null) {
@@ -988,6 +1204,24 @@
 				}
 			}
 
+			function navigateIntoTaskAndSelectSubtask(targetTask, subtaskToSelect) {
+				// Temporarily disable smooth scrolling
+				document.documentElement.style.scrollBehavior = 'auto';
+				
+				// Set the selectedSubtaskId on the current task before navigating
+				currentTask.selectedSubtaskId = targetTask.id;
+				
+				// Navigate into the target task
+				taskPath.push(targetTask);
+				currentTask = targetTask;
+				updateBreadcrumbs(currentTask);
+				renderCurrentView();
+				
+				// Select the moved subtask
+				selectAndFocusTask(subtaskToSelect);
+				currentTask.selectedSubtaskId = subtaskToSelect.id;
+			}
+
 			function navigateToParentTask() {
 				// Check if the current active parent task is the root
 				if (currentTask.id === 'root') {
@@ -1016,6 +1250,26 @@
 						selectAndFocusTask(currentTask);
 					}
 					currentTask.selectedSubtaskId = currentTaskId;
+				}
+			}
+
+			function navigateToParentTaskAndSelectTask(targetTask) {
+				// Check if the current active parent task is the root
+				if (currentTask.id === 'root') {
+					// We're at root level, just re-render and select the target task
+					renderCurrentView();
+					selectAndFocusTask(targetTask);
+				} else if (taskPath.length > 1) {
+					// Normal navigation out - we're deeper than root level
+					// Temporarily disable smooth scrolling
+					document.documentElement.style.scrollBehavior = 'auto';
+					
+					taskPath.pop();
+					currentTask = taskPath[taskPath.length - 1];
+					updateBreadcrumbs(currentTask);
+					renderCurrentView();
+					selectAndFocusTask(targetTask);
+					currentTask.selectedSubtaskId = targetTask.id;
 				}
 			}
 

@@ -16,31 +16,37 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 ### quickstart
 1. press the `Return` / `Enter` key to add subtasks to the root "todo" task
 2. give each new subtask a meaningful name
-3. use `Shift + Arrow Right` to navigate into a subtask
-4. use `Shift + Arrow Left` to return to the parent task
+3. use `Shift + ➡️` to navigate into a subtask
+4. use `Shift + ⬅️` to return to the parent task
 5. use `Shift + Enter` to quickly mark tasks as complete or incomplete
 
 ## controls
 
 ### navigation
-- `Arrow Up/Down` move between tasks at the same level
-- `Shift + Arrow Right` navigate into a subtask
-- `Shift + Arrow Left` return to the enclosing parent task
+- `⬆️/⬇️` move between tasks at the same level
+- `Shift + ➡️` navigate into a subtask
+- `Shift + ⬅️` return to the enclosing parent task
 
 ### task management
 - `Enter` add a new task
-- `Arrow Down` (on last subtask) add a new task at the bottom of the list
+- `⬇️` (on last subtask) add a new task at the bottom of the list
 - `Backspace` (when selected task's text is empty) remove the task and its subtasks
 - `Shift + Enter` toggle selected task's completion status
-- `Shift + Arrow Up/Down` reposition the selected task within its current level
+- `Shift + ⬆️/⬇️` reposition the selected task within its current level
+- `⌘ + ⬆️/⬇️` push the selected task into the task above or below it
+- `⌘ + ⬅️` pull the selected task out one level (to the level of its parent)
+
+### combined movement + navigation
+- `⌘ + Shift + ⬆️/⬇️` push the selected task into the task above or below it AND navigate to its new position
+- `⌘ + Shift + ⬅️` pull the selected task out one level AND navigate to its new position
 
 ### text editing
-- `Left/Right` move text cursor within selected task
-- `Command/Ctrl + C` copy the selected task's text (or highlighted substring)
-- `Command/Ctrl + X` cut the selected task's text (or highlighted substring)
-- `Command/Ctrl + V` paste text content from the clipboard
-- `Command/Ctrl + Z` undo text edit
-- `Command/Ctrl + Shift + Z` redo text edit
+- `⬅️/➡️` move text cursor within selected task
+- `⌘ + C` copy the selected task's text (or highlighted substring)
+- `⌘ + X` cut the selected task's text (or highlighted substring)
+- `⌘ + V` paste text content from the clipboard
+- `⌘ + Z` undo text edit
+- `⌘ + Shift + Z` redo text edit
 
 ## data persistence
 your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
@@ -48,8 +54,8 @@ your task tree is automatically saved to your browser's local storage after each
 > [!WARNING]  
 > clearing your browsing data may erase your saved tasks. to avoid losing progress, create a manual backup before clearing your browsing data.
 
-- `Command/Ctrl + S` export tasks to .txt file
-- `Command/Ctrl + O` import tasks from .txt file
+- `⌘ + S` export tasks to .txt file
+- `⌘ + O` import tasks from .txt file
 
 ## themes
 press `F2` to cycle through available themes.
