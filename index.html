@@ -740,10 +740,15 @@
 					return task.state; // If no subtasks, keep current state
 				}
 				const anyUnchecked = task.subtasks.some(t => t.state === 0);
+				const allChecked = task.subtasks.every(t => t.state === 1);
 				const allCheckedOrIndeterminate = task.subtasks.every(t => t.state === 1 || t.state === 2);
-				
-				if (allCheckedOrIndeterminate) {
-					return 1; // Checked
+
+				if (allChecked) {
+					return 1; // All children genuinely checked
+				} else if (allCheckedOrIndeterminate) {
+					// Mix of checked and indeterminate (no unchecked)
+					// Indeterminate parent stays indeterminate; checked/unchecked parent becomes checked
+					return task.state === 2 ? 2 : 1;
 				} else if (anyUnchecked) {
 					return 0; // Unchecked
 				}
@@ -780,6 +785,14 @@
 						}
 					}
 				});
+			}
+
+			// Adjust a moved task's state to be valid under its new parent
+			function adjustMovedTaskState(movedTask, newParent) {
+				if (movedTask.state === 2 && newParent.state === 0) {
+					movedTask.state = 0;
+					updateSubtasksState(movedTask, 0);
+				}
 			}
 
 			function deleteSubtask(subtask) {
@@ -960,6 +973,9 @@
 				// Add the subtask to the target task's subtasks
 				targetTask.subtasks.push(subtask);
 
+				// Adjust moved task's state for its new parent
+				adjustMovedTaskState(subtask, targetTask);
+
 				// Update parent task state after removal
 				updateTaskAndAncestors(parentTask);
 
@@ -1005,6 +1021,9 @@
 				// Add the subtask to the target task's subtasks
 				targetTask.subtasks.push(subtask);
 
+				// Adjust moved task's state for its new parent
+				adjustMovedTaskState(subtask, targetTask);
+
 				// Update parent task state after removal
 				updateTaskAndAncestors(parentTask);
 
@@ -1049,6 +1068,9 @@
 					// Insert after the current parent's position
 					grandParent.subtasks.splice(currentParentIndex + 1, 0, subtask);
 				}
+
+				// Adjust moved task's state for its new parent
+				adjustMovedTaskState(subtask, grandParent);
 
 				// Update task states
 				updateTaskAndAncestors(currentParent);
@@ -1109,6 +1131,9 @@
 					// Insert after the current parent's position
 					grandParent.subtasks.splice(currentParentIndex + 1, 0, subtask);
 				}
+
+				// Adjust moved task's state for its new parent
+				adjustMovedTaskState(subtask, grandParent);
 
 				// Update task states
 				updateTaskAndAncestors(currentParent);
