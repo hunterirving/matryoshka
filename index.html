@@ -874,10 +874,10 @@
 					}
 				} else if (e.key === 'ArrowUp' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
 					e.preventDefault();
-					pushSubtaskIntoTarget(task, 'up');
+					if (!e.repeat) pushSubtaskIntoTarget(task, 'up');
 				} else if (e.key === 'ArrowDown' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
 					e.preventDefault();
-					pushSubtaskIntoTarget(task, 'down');
+					if (!e.repeat) pushSubtaskIntoTarget(task, 'down');
 				} else if (e.key === 'ArrowUp' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('up');
@@ -886,13 +886,13 @@
 					navigateTasks('down');
 				} else if (e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
 					e.preventDefault();
-					pullSubtaskOutLayer(task, true);
+					if (!e.repeat) pullSubtaskOutLayer(task, true);
 				} else if (e.key === 'ArrowUp' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
 					e.preventDefault();
-					pushSubtaskIntoTarget(task, 'up', true);
+					if (!e.repeat) pushSubtaskIntoTarget(task, 'up', true);
 				} else if (e.key === 'ArrowDown' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
 					e.preventDefault();
-					pushSubtaskIntoTarget(task, 'down', true);
+					if (!e.repeat) pushSubtaskIntoTarget(task, 'down', true);
 				} else if (e.key === 'ArrowUp' && e.shiftKey) {
 					e.preventDefault();
 					moveSubtask(task, 'up');
@@ -912,7 +912,7 @@
 					}
 				} else if (e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
 					e.preventDefault();
-					pullSubtaskOutLayer(task);
+					if (!e.repeat) pullSubtaskOutLayer(task);
 				} else if (e.key === 'ArrowLeft' && e.shiftKey) {
 					e.preventDefault();
 					if (!keyHandler.shiftLeft.pressed) {
