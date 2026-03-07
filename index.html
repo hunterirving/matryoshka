@@ -687,6 +687,10 @@
 			}
 
 			function toggleTaskState(task) {
+				// Save cursor position before re-rendering
+				const taskInput = document.querySelector(`.task-container[data-id="${task.id}"] input[type="text"]`)
+				const cursorPos = taskInput ? taskInput.selectionStart : null
+				
 				if (task.state === 1) {
 					if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {
 						task.state = 0;
@@ -698,7 +702,7 @@
 						}
 						
 						renderCurrentView();
-						selectAndFocusTask(task);
+						selectAndFocusTask(task, cursorPos);
 						scheduleSave();
 					} else {
 						// disallow unchecking and play a 'shake' animation
@@ -714,7 +718,7 @@
 					}
 					
 					renderCurrentView();
-					selectAndFocusTask(task);
+					selectAndFocusTask(task, cursorPos);
 					scheduleSave();
 				}
 			}
@@ -1071,11 +1075,12 @@
 				scheduleSave();
 			}
 
-			function selectAndFocusTask(task) {
+			function selectAndFocusTask(task, cursorPos) {
 				const taskInput = document.querySelector(`.task-container[data-id="${task.id}"] input[type="text"]`);
 				if (taskInput) {
 					taskInput.focus();
-					taskInput.setSelectionRange(taskInput.value.length, taskInput.value.length);
+					const pos = cursorPos != null ? cursorPos : taskInput.value.length
+					taskInput.setSelectionRange(pos, pos);
 					setActiveTask(taskInput, task);
 				}
 			}
