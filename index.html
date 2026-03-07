@@ -968,8 +968,11 @@
 				// Remove the subtask from its current parent
 				parentTask.subtasks.splice(index, 1);
 
-				// Add the subtask to the target task's subtasks
-				targetTask.subtasks.push(subtask);
+				// Add the subtask to the top of the target task's subtasks
+				targetTask.subtasks.unshift(subtask);
+
+				// Mark the pushed task as selected within the target
+				targetTask.selectedSubtaskId = subtask.id;
 
 				// Adjust moved task's state for its new parent
 				adjustMovedTaskState(subtask, targetTask);
