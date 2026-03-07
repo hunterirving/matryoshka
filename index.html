@@ -216,6 +216,17 @@
 		.shake {
 			animation: shake 0.25s ease-out;
 		}
+		@keyframes shake-vertical {
+			0% { transform: translateY(0); }
+			20% { transform: translateY(3px); }
+			40% { transform: translateY(-3px); }
+			60% { transform: translateY(3px); }
+			80% { transform: translateY(-3px); }
+			100% { transform: translateY(0); }
+		}
+		.shake-vertical {
+			animation: shake-vertical 0.25s ease-out;
+		}
 		html {
 			scroll-behavior: smooth;
 			overflow-y: scroll;
@@ -587,7 +598,7 @@
 							keyHandler.enter.blocked = true;
 							addNewSubtask(currentTask, task);
 						}
-					} else if (e.key === 'ArrowDown' && !e.shiftKey) {
+					} else if (e.key === 'ArrowDown' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
 						if (keyHandler.arrowDown.blocked) {
 							e.preventDefault();
 							return;
@@ -723,13 +734,14 @@
 				}
 			}
 
-			function applyShakeAnimation(taskId) {
+			function applyShakeAnimation(taskId, direction = 'horizontal') {
 				const checkbox = document.querySelector(`.task-container[data-id="${taskId}"] .checkbox-label`);
 				if (checkbox) {
-					checkbox.classList.add('shake');
+					const className = direction === 'vertical' ? 'shake-vertical' : 'shake'
+					checkbox.classList.add(className);
 					setTimeout(() => {
-						checkbox.classList.remove('shake');
-					}, 250); // Remove class after animation completes
+						checkbox.classList.remove(className);
+					}, 250);
 				}
 			}
 
@@ -870,39 +882,66 @@
 			}
 
 			function handleKeyDown(e, task) {
+				const cmd = e.metaKey || e.ctrlKey;
+
 				if (e.key === 'Enter' && e.shiftKey) {
 					e.preventDefault();
 					if (!keyHandler.shiftEnter.pressed) {
 						keyHandler.shiftEnter.pressed = true;
 						toggleTaskState(task);
 					}
-				} else if (e.key === 'ArrowUp' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+				} else if (e.key === 'ArrowUp' && cmd && !e.shiftKey) {
 					e.preventDefault();
-					if (!e.repeat) pushSubtaskIntoTarget(task, 'up');
-				} else if (e.key === 'ArrowDown' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+					if (!e.repeat && !pushSubtaskIntoTarget(task, 'up')) {
+						applyShakeAnimation(task.id, 'vertical');
+					}
+				} else if (e.key === 'ArrowDown' && cmd && !e.shiftKey) {
 					e.preventDefault();
-					if (!e.repeat) pushSubtaskIntoTarget(task, 'down');
+					if (!e.repeat && !pushSubtaskIntoTarget(task, 'down')) {
+						applyShakeAnimation(task.id, 'vertical');
+					}
+				} else if (e.key === 'ArrowRight' && cmd && !e.shiftKey) {
+					e.preventDefault();
+					applyShakeAnimation(task.id);
+				} else if (e.key === 'ArrowLeft' && cmd && !e.shiftKey) {
+					e.preventDefault();
+					if (!e.repeat && !pullSubtaskOutLayer(task)) {
+						applyShakeAnimation(task.id);
+					}
+				} else if (e.key === 'ArrowUp' && cmd && e.shiftKey) {
+					e.preventDefault();
+					if (!e.repeat && !pushSubtaskIntoTarget(task, 'up', true)) {
+						applyShakeAnimation(task.id, 'vertical');
+					}
+				} else if (e.key === 'ArrowDown' && cmd && e.shiftKey) {
+					e.preventDefault();
+					if (!e.repeat && !pushSubtaskIntoTarget(task, 'down', true)) {
+						applyShakeAnimation(task.id, 'vertical');
+					}
+				} else if (e.key === 'ArrowLeft' && cmd && e.shiftKey) {
+					e.preventDefault();
+					if (!e.repeat && !pullSubtaskOutLayer(task, true)) {
+						applyShakeAnimation(task.id);
+					}
+				} else if (e.key === 'ArrowRight' && cmd && e.shiftKey) {
+					e.preventDefault();
+					applyShakeAnimation(task.id);
 				} else if (e.key === 'ArrowUp' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('up');
 				} else if (e.key === 'ArrowDown' && !e.shiftKey) {
 					e.preventDefault();
 					navigateTasks('down');
-				} else if (e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
-					e.preventDefault();
-					if (!e.repeat) pullSubtaskOutLayer(task, true);
-				} else if (e.key === 'ArrowUp' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
-					e.preventDefault();
-					if (!e.repeat) pushSubtaskIntoTarget(task, 'up', true);
-				} else if (e.key === 'ArrowDown' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
-					e.preventDefault();
-					if (!e.repeat) pushSubtaskIntoTarget(task, 'down', true);
 				} else if (e.key === 'ArrowUp' && e.shiftKey) {
 					e.preventDefault();
-					moveSubtask(task, 'up');
+					if (!moveSubtask(task, 'up')) {
+						applyShakeAnimation(task.id, 'vertical');
+					}
 				} else if (e.key === 'ArrowDown' && e.shiftKey) {
 					e.preventDefault();
-					moveSubtask(task, 'down');
+					if (!moveSubtask(task, 'down')) {
+						applyShakeAnimation(task.id, 'vertical');
+					}
 				} else if (e.key === 'ArrowRight' && e.shiftKey) {
 					e.preventDefault();
 					if (!keyHandler.shiftRight.pressed) {
@@ -910,13 +949,9 @@
 						if (task !== currentTask) {
 							navigateIntoSubtask(task);
 						} else {
-							// Apply shake animation when trying to navigate into the parent task
 							applyShakeAnimation(task.id);
 						}
 					}
-				} else if (e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
-					e.preventDefault();
-					if (!e.repeat) pullSubtaskOutLayer(task);
 				} else if (e.key === 'ArrowLeft' && e.shiftKey) {
 					e.preventDefault();
 					if (!keyHandler.shiftLeft.pressed) {
@@ -927,38 +962,41 @@
 			}
 
 			function moveSubtask(subtask, direction) {
+				if (subtask === currentTask) return false;
+
 				const parentTask = findParentTask(subtask);
-				if (!parentTask) return;
+				if (!parentTask) return false;
 
 				const index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
-				if (index === -1) return;
+				if (index === -1) return false;
 
 				if (direction === 'up' && index > 0) {
 					[parentTask.subtasks[index - 1], parentTask.subtasks[index]] = [parentTask.subtasks[index], parentTask.subtasks[index - 1]];
 				} else if (direction === 'down' && index < parentTask.subtasks.length - 1) {
 					[parentTask.subtasks[index], parentTask.subtasks[index + 1]] = [parentTask.subtasks[index + 1], parentTask.subtasks[index]];
+				} else {
+					return false;
 				}
 
 				renderCurrentView();
 				selectAndFocusTask(subtask);
 				scheduleSave();
+				return true;
 			}
 
 			function pushSubtaskIntoTarget(subtask, direction, navigate = false) {
 				// Don't allow pushing the current parent task
-				if (subtask === currentTask) {
-					return;
-				}
+				if (subtask === currentTask) return false;
 
 				if (navigate) {
 					document.documentElement.style.scrollBehavior = 'auto';
 				}
 
 				const parentTask = findParentTask(subtask);
-				if (!parentTask) return;
+				if (!parentTask) return false;
 
 				const index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
-				if (index === -1) return;
+				if (index === -1) return false;
 
 				let targetTask = null;
 				if (direction === 'up' && index > 0) {
@@ -967,7 +1005,7 @@
 					targetTask = parentTask.subtasks[index + 1];
 				}
 
-				if (!targetTask) return;
+				if (!targetTask) return false;
 
 				// Remove the subtask from its current parent
 				parentTask.subtasks.splice(index, 1);
@@ -995,18 +1033,15 @@
 				}
 
 				scheduleSave();
+				return true;
 			}
 
 			function pullSubtaskOutLayer(subtask, navigate = false) {
 				// Don't allow pulling the current parent task
-				if (subtask === currentTask) {
-					return;
-				}
+				if (subtask === currentTask) return false;
 
 				// Don't allow pulling when at root level
-				if (taskPath.length <= 1) {
-					return;
-				}
+				if (taskPath.length <= 1) return false;
 
 				if (navigate) {
 					document.documentElement.style.scrollBehavior = 'auto';
@@ -1056,6 +1091,7 @@
 				}
 
 				scheduleSave();
+				return true;
 			}
 
 
