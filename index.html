@@ -378,6 +378,7 @@
 			let currentTask = rootTask;
 			let taskPath = [currentTask];
 			let lastSubtaskDownArrowReleased = false;
+			let lastSubtaskShiftDownReleased = false;
 			let saveTimer = null;
 			let currentThemeIndex = 0;
 			let isF2Pressed = false;
@@ -526,6 +527,9 @@
 					canAdd: true,
 					blocked: false
 				},
+				shiftArrowDown: {
+					blocked: false
+				},
 				shiftEnter: {
 					pressed: false
 				},
@@ -611,6 +615,29 @@
 						} else {
 							handleKeyDown(e, task);
 						}
+					} else if (e.key === 'ArrowDown' && e.shiftKey && !e.metaKey && !e.ctrlKey) {
+						if (keyHandler.shiftArrowDown.blocked) {
+							e.preventDefault();
+							return;
+						}
+						if (isLastSubtask(task) && lastSubtaskShiftDownReleased && task !== currentTask && !e.repeat) {
+							e.preventDefault();
+							keyHandler.shiftArrowDown.blocked = true;
+							// Insert a new empty task above the current task, keeping current task selected
+							const parentTask = findParentTask(task);
+							if (parentTask) {
+								const index = parentTask.subtasks.findIndex(t => t.id === task.id);
+								const newSubtask = { id: generateId(), text: '', state: 0, subtasks: [], selectedSubtaskId: null };
+								parentTask.subtasks.splice(index, 0, newSubtask);
+								updateTaskAndAncestors(parentTask);
+								renderCurrentView();
+								selectAndFocusTask(task);
+								scheduleSave();
+							}
+							lastSubtaskShiftDownReleased = false;
+						} else {
+							handleKeyDown(e, task);
+						}
 					} else {
 						handleKeyDown(e, task);
 					}
@@ -627,10 +654,13 @@
 					} else if (e.key === 'ArrowDown') {
 						keyHandler.arrowDown.canAdd = true;
 						keyHandler.arrowDown.blocked = false;
+						keyHandler.shiftArrowDown.blocked = false;
 						if (isLastSubtask(task)) {
 							lastSubtaskDownArrowReleased = true;
+							lastSubtaskShiftDownReleased = true;
 						} else {
 							lastSubtaskDownArrowReleased = false;
+							lastSubtaskShiftDownReleased = false;
 						}
 					} else if (e.key === 'ArrowRight') {
 						keyHandler.shiftRight.pressed = false;
@@ -1154,6 +1184,7 @@
 					}
 				}
 				lastSubtaskDownArrowReleased = false;
+				lastSubtaskShiftDownReleased = false;
 			}
 
 			function navigateIntoSubtask(subtask) {
@@ -1258,6 +1289,7 @@
 				}
 				updateBreadcrumbs(task);
 				lastSubtaskDownArrowReleased = isLastSubtask(task);
+				lastSubtaskShiftDownReleased = isLastSubtask(task);
 				input.focus();
 				
 				// Center the active task in the viewport
