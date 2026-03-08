@@ -5,7 +5,7 @@
 turn mountains into molehills (then molehills into anthills) with <b>matryoshka</b>,<br>
 the nested todo list that breaks complex tasks into manageable subtasks.
 
-<i><b>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a> !</b></i> (physical keyboard required)
+<i><b>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</b></i> (physical keyboard required)
 
 ### key features
 - unlimited subtask depth
@@ -17,7 +17,7 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 1. press the `Return` / `Enter` key to add subtasks to the root "todo" task
 2. give each new subtask a meaningful name
 3. use `Shift + ➡️` to navigate into a subtask
-4. use `Shift + ⬅️` to return to the parent task
+4. use `Shift + ⬅️` to return to the enclosing parent task
 5. use `Shift + Enter` to quickly mark tasks as complete or incomplete
 
 ## controls
@@ -30,23 +30,23 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 ### task management
 - `Enter` add a new task
 - `⬇️` (on last subtask) add a new task at the bottom of the list
-- `Backspace` (when selected task's text is empty) remove the task and its subtasks
-- `Shift + Enter` toggle selected task's completion status
-- `Shift + ⬆️/⬇️` reposition the selected task within its current level
-- `⌘ + ⬆️/⬇️` push the selected task into the task above or below it
-- `⌘ + ⬅️` pull the selected task out one level (to the level of its parent)
+- `Backspace` (when task text is empty) delete selected task(s) and their subtasks
+- `Shift + Enter` toggle selected task(s) completion status
 
-### combined movement + navigation
-- `⌘ + Shift + ⬆️/⬇️` push the selected task into the task above or below it AND navigate to its new position
-- `⌘ + Shift + ⬅️` pull the selected task out one level AND navigate to its new position
+### reorganization
+- `Shift + ⬆️/⬇️` reposition selected task(s) within their current level
+- `⌘ + ⬆️/⬇️` push selected task(s) into the task above or below
+- `⌘ + ⬅️` pull selected task(s) out one level (to the level of their parent)
+- hold `Shift` with any `⌘` command (push/pull) to simultaneously navigate to the task(s)' new position
+
+### multi-select
+- `Option + ⬆️/⬇️` extend or contract the selection to include adjacent tasks
+- `⬆️/⬇️` (without modifier) clear the selection and resume single-task navigation
 
 ### text editing
-- `⬅️/➡️` move text cursor within selected task
-- `⌘ + C` copy the selected task's text (or highlighted substring)
-- `⌘ + X` cut the selected task's text (or highlighted substring)
-- `⌘ + V` paste text content from the clipboard
-- `⌘ + Z` undo text edit
-- `⌘ + Shift + Z` redo text edit
+- `⌘ + C` copy task text (or highlighted substring)
+- `⌘ + X` cut task text (or highlighted substring)
+- `⌘ + V` paste text from the clipboard
 
 ## data persistence
 your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
