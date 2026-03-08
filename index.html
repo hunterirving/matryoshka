@@ -384,6 +384,39 @@
 			let isF2Pressed = false;
 			let themes = [];
 
+			// Multi-select state
+			let multiSelectAnchorId = null  // task where multi-select started
+			let multiSelectedIds = []       // ordered array of selected task ids
+
+			function clearMultiSelect() {
+				multiSelectAnchorId = null
+				multiSelectedIds = []
+				// Remove .active from non-focused tasks
+				const focused = document.activeElement
+				const focusedContainer = focused ? focused.closest('.task-container') : null
+				document.querySelectorAll('.task-container.active').forEach(el => {
+					if (el !== focusedContainer) el.classList.remove('active')
+				})
+			}
+
+			function getMultiSelectedTasks() {
+				// Return task objects in subtask order
+				return currentTask.subtasks.filter(t => multiSelectedIds.includes(t.id))
+			}
+
+			function applyMultiSelectHighlights() {
+				for (const id of multiSelectedIds) {
+					const container = document.querySelector(`.task-container[data-id="${id}"]`)
+					if (container) container.classList.add('active')
+				}
+			}
+
+			function shakeAllSelected(direction = 'horizontal') {
+				for (const id of multiSelectedIds) {
+					applyShakeAnimation(id, direction)
+				}
+			}
+
 			function handleSave(e) {
 				if ((e.metaKey || e.ctrlKey) && e.key === 's') {
 					e.preventDefault();
@@ -576,10 +609,58 @@
 							e.preventDefault();
 							return;
 						}
-						if (taskInput.value === '' && keyHandler.backspace.canDelete) {
+						// Multi-select backspace handling
+						if (multiSelectedIds.length > 1) {
+							const selected = getMultiSelectedTasks()
+							const allEmpty = selected.every(t => t.text === '')
+							if (allEmpty) {
+								// All empty: require release+repress (canDelete) before bulk deleting
+								e.preventDefault()
+								if (keyHandler.backspace.canDelete) {
+									keyHandler.backspace.blocked = true
+									const toDelete = selected.filter(t => t !== taskPath[0] && t !== currentTask)
+									// Don't delete if it would leave the root task with no subtasks
+									if (toDelete.length > 0 && !(currentTask.id === 'root' && toDelete.length >= currentTask.subtasks.length)) {
+										for (const t of toDelete) {
+											const idx = currentTask.subtasks.findIndex(s => s.id === t.id)
+											if (idx !== -1) currentTask.subtasks.splice(idx, 1)
+										}
+										clearMultiSelect()
+										updateTaskAndAncestors(currentTask)
+										if (currentTask.subtasks.length === 0 && taskPath.length > 1) {
+											navigateToParentTask()
+										} else {
+											renderCurrentView()
+										}
+										scheduleSave()
+									} else {
+										// Can't delete: shake all selected tasks
+										for (const t of selected) {
+											applyShakeAnimation(t.id)
+										}
+									}
+								}
+								return
+							}
+							// Some tasks still have text: remove last char from all that have text
+							e.preventDefault()
+							for (const t of selected) {
+								if (t.text.length > 0) {
+									t.text = t.text.slice(0, -1)
+									const inp = document.querySelector(`.task-container[data-id="${t.id}"] input[type="text"]`)
+									if (inp) inp.value = t.text
+								}
+							}
+							// Mark canDelete false so when all become empty, user must release+repress
+							keyHandler.backspace.canDelete = false
+							scheduleSave()
+							return
+						}
+						if (taskInput.value === '' && keyHandler.backspace.canDelete && multiSelectedIds.length <= 1) {
 							e.preventDefault();
 							if (task !== taskPath[0]) {
 								keyHandler.backspace.blocked = true;
+								clearMultiSelect()
 								if (task === currentTask) {
 									deleteCurrentParentTask();
 								} else {
@@ -600,9 +681,10 @@
 						if (keyHandler.enter.canAdd) {
 							e.preventDefault();
 							keyHandler.enter.blocked = true;
+							clearMultiSelect()
 							addNewSubtask(currentTask, task);
 						}
-					} else if (e.key === 'ArrowDown' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+					} else if (e.key === 'ArrowDown' && !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
 						if (keyHandler.arrowDown.blocked) {
 							e.preventDefault();
 							return;
@@ -615,12 +697,32 @@
 						} else {
 							handleKeyDown(e, task);
 						}
-					} else if (e.key === 'ArrowDown' && e.shiftKey && !e.metaKey && !e.ctrlKey) {
+					} else if (e.key === 'ArrowDown' && e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
 						if (keyHandler.shiftArrowDown.blocked) {
 							e.preventDefault();
 							return;
 						}
-						if (isLastSubtask(task) && lastSubtaskShiftDownReleased && task !== currentTask && !e.repeat) {
+						// Multi-select: insert new task above chunk when at bottom
+						if (multiSelectedIds.length > 1 && !e.repeat) {
+							const selected = getMultiSelectedTasks()
+							const lastSelected = selected[selected.length - 1]
+							if (isLastSubtask(lastSelected) && lastSubtaskShiftDownReleased) {
+								e.preventDefault()
+								keyHandler.shiftArrowDown.blocked = true
+								// Find topmost selected task index and insert above chunk
+								const topIndex = currentTask.subtasks.findIndex(t => multiSelectedIds.includes(t.id))
+								const newSubtask = { id: generateId(), text: '', state: 0, subtasks: [], selectedSubtaskId: null }
+								currentTask.subtasks.splice(topIndex, 0, newSubtask)
+								updateTaskAndAncestors(currentTask)
+								currentTask.selectedSubtaskId = multiSelectAnchorId
+								renderCurrentView()
+								applyMultiSelectHighlights()
+								scheduleSave()
+								lastSubtaskShiftDownReleased = false
+							} else {
+								handleKeyDown(e, task)
+							}
+						} else if (isLastSubtask(task) && lastSubtaskShiftDownReleased && task !== currentTask && !e.repeat) {
 							e.preventDefault();
 							keyHandler.shiftArrowDown.blocked = true;
 							// Insert a new empty task above the current task, keeping current task selected
@@ -655,7 +757,11 @@
 						keyHandler.arrowDown.canAdd = true;
 						keyHandler.arrowDown.blocked = false;
 						keyHandler.shiftArrowDown.blocked = false;
-						if (isLastSubtask(task)) {
+						// During multi-select, check if bottommost selected task is last subtask
+						const isAtBottom = multiSelectedIds.length > 1
+							? isLastSubtask(getMultiSelectedTasks().slice(-1)[0])
+							: isLastSubtask(task)
+						if (isAtBottom) {
 							lastSubtaskDownArrowReleased = true;
 							lastSubtaskShiftDownReleased = true;
 						} else {
@@ -672,15 +778,55 @@
 				taskInput.addEventListener('keydown', keydownHandler);
 				taskInput.addEventListener('keyup', keyupHandler);
 				taskInput.addEventListener('keydown', handleCopyAndCut);
-				taskInput.addEventListener('input', () => {
-					task.text = taskInput.value;
+				taskInput.addEventListener('input', (e) => {
+					const oldText = task.text
+					task.text = taskInput.value
+					// Propagate edits to all other multi-selected tasks (always at end of text)
+					if (multiSelectedIds.length > 1 && multiSelectedIds.includes(task.id)) {
+						const otherSelected = getMultiSelectedTasks().filter(t => t.id !== task.id)
+
+						if (e.inputType === 'insertText' && e.data) {
+							// Append typed character(s) to end of each task
+							for (const t of otherSelected) {
+								t.text = t.text + e.data
+								const otherInput = document.querySelector(`.task-container[data-id="${t.id}"] input[type="text"]`)
+								if (otherInput) otherInput.value = t.text
+							}
+						} else if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
+							// Remove last character from each task
+							for (const t of otherSelected) {
+								if (t.text.length > 0) {
+									t.text = t.text.slice(0, -1)
+								}
+								const otherInput = document.querySelector(`.task-container[data-id="${t.id}"] input[type="text"]`)
+								if (otherInput) otherInput.value = t.text
+							}
+						} else if (e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop') {
+							// Compute what was inserted by comparing old and new text length
+							const addedLen = taskInput.value.length - oldText.length
+							if (addedLen > 0) {
+								const pastedText = taskInput.value.slice(taskInput.selectionStart - addedLen, taskInput.selectionStart)
+								for (const t of otherSelected) {
+									t.text = t.text + pastedText
+									const otherInput = document.querySelector(`.task-container[data-id="${t.id}"] input[type="text"]`)
+									if (otherInput) otherInput.value = t.text
+								}
+							}
+						}
+					}
 					if (task === currentTask) {
 						updatePageTitle(task);
 					}
 					scheduleSave();
 				});
 
-				taskInput.addEventListener('focus', () => setActiveTask(taskInput, task));
+				taskInput.addEventListener('focus', () => {
+					// If clicking a task outside the multi-selection, clear it
+					if (multiSelectedIds.length > 1 && !multiSelectedIds.includes(task.id)) {
+						clearMultiSelect()
+					}
+					setActiveTask(taskInput, task)
+				});
 
 				taskContainer.appendChild(checkbox);
 				taskContainer.appendChild(checkboxLabel);
@@ -768,10 +914,17 @@
 				const checkbox = document.querySelector(`.task-container[data-id="${taskId}"] .checkbox-label`);
 				if (checkbox) {
 					const className = direction === 'vertical' ? 'shake-vertical' : 'shake'
+					if (checkbox.dataset.shaking) return
+					checkbox.dataset.shaking = '1'
 					checkbox.classList.add(className);
-					setTimeout(() => {
-						checkbox.classList.remove(className);
-					}, 250);
+					checkbox.addEventListener('animationend', () => {
+						checkbox.classList.remove(className)
+					}, { once: true })
+					const clearShaking = () => {
+						delete checkbox.dataset.shaking
+						document.removeEventListener('keyup', clearShaking)
+					}
+					document.addEventListener('keyup', clearShaking)
 				}
 			}
 
@@ -911,70 +1064,177 @@
 				return null;
 			}
 
+			// Multi-select: extend selection with Alt+Up/Down
+			function extendMultiSelect(task, direction) {
+				if (task === currentTask) return // can't multi-select the parent
+
+				const tasks = currentTask.subtasks
+				if (tasks.length === 0) return
+
+				// Initialize multi-select from current task
+				if (multiSelectAnchorId === null) {
+					multiSelectAnchorId = task.id
+					multiSelectedIds = [task.id]
+				}
+
+				const anchorIndex = tasks.findIndex(t => t.id === multiSelectAnchorId)
+				const currentIndex = tasks.findIndex(t => t.id === task.id)
+
+				if (direction === 'down') {
+					// Find the bottommost selected task
+					const bottomIndex = tasks.findIndex((t, i) => {
+						return multiSelectedIds.includes(t.id) &&
+							(i === tasks.length - 1 || !multiSelectedIds.includes(tasks[i + 1].id))
+					})
+					if (currentIndex <= anchorIndex && multiSelectedIds.length > 1) {
+						// Contracting: remove from top
+						multiSelectedIds = multiSelectedIds.filter(id => id !== task.id)
+						const nextTask = tasks[currentIndex + 1]
+						if (nextTask) selectAndFocusTask(nextTask)
+					} else if (bottomIndex < tasks.length - 1) {
+						// Extending downward
+						const nextTask = tasks[bottomIndex + 1]
+						multiSelectedIds.push(nextTask.id)
+						selectAndFocusTask(nextTask)
+					}
+				} else {
+					// Find the topmost selected task
+					const topIndex = tasks.findIndex(t => multiSelectedIds.includes(t.id))
+					if (currentIndex >= anchorIndex && multiSelectedIds.length > 1) {
+						// Contracting: remove from bottom
+						multiSelectedIds = multiSelectedIds.filter(id => id !== task.id)
+						const prevTask = tasks[currentIndex - 1]
+						if (prevTask) selectAndFocusTask(prevTask)
+					} else if (topIndex > 0) {
+						// Extending upward
+						const prevTask = tasks[topIndex - 1]
+						multiSelectedIds.unshift(prevTask.id)
+						selectAndFocusTask(prevTask)
+					}
+				}
+
+				applyMultiSelectHighlights()
+			}
+
 			function handleKeyDown(e, task) {
 				const cmd = e.metaKey || e.ctrlKey;
+				const hasMultiSelect = multiSelectedIds.length > 1
 
+				// Alt+Up/Down: extend multi-selection
+				if (e.key === 'ArrowUp' && e.altKey && !cmd && !e.shiftKey) {
+					e.preventDefault();
+					extendMultiSelect(task, 'up')
+					return
+				} else if (e.key === 'ArrowDown' && e.altKey && !cmd && !e.shiftKey) {
+					e.preventDefault();
+					extendMultiSelect(task, 'down')
+					return
+				}
+
+				// Shift+Enter: toggle task state (bulk if multi-selected)
 				if (e.key === 'Enter' && e.shiftKey) {
 					e.preventDefault();
 					if (!keyHandler.shiftEnter.pressed) {
 						keyHandler.shiftEnter.pressed = true;
-						toggleTaskState(task);
+						if (hasMultiSelect) {
+							bulkToggleTaskState()
+						} else {
+							toggleTaskState(task);
+						}
 					}
-				} else if (e.key === 'ArrowUp' && cmd && !e.shiftKey) {
+				// Cmd+Up: push into task above (bulk if multi-selected)
+				} else if (e.key === 'ArrowUp' && cmd && !e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!e.repeat && !pushSubtaskIntoTarget(task, 'up')) {
-						applyShakeAnimation(task.id, 'vertical');
+					if (!e.repeat) {
+						const success = hasMultiSelect ? pushMultiSelectedIntoTarget('up') : pushSubtaskIntoTarget(task, 'up')
+						if (!success) {
+							hasMultiSelect ? shakeAllSelected('vertical') : applyShakeAnimation(task.id, 'vertical')
+						}
 					}
-				} else if (e.key === 'ArrowDown' && cmd && !e.shiftKey) {
+				// Cmd+Down: push into task below (bulk if multi-selected)
+				} else if (e.key === 'ArrowDown' && cmd && !e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!e.repeat && !pushSubtaskIntoTarget(task, 'down')) {
-						applyShakeAnimation(task.id, 'vertical');
+					if (!e.repeat) {
+						const success = hasMultiSelect ? pushMultiSelectedIntoTarget('down') : pushSubtaskIntoTarget(task, 'down')
+						if (!success) {
+							hasMultiSelect ? shakeAllSelected('vertical') : applyShakeAnimation(task.id, 'vertical')
+						}
 					}
-				} else if (e.key === 'ArrowRight' && cmd && !e.shiftKey) {
+				} else if (e.key === 'ArrowRight' && cmd && !e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					applyShakeAnimation(task.id);
-				} else if (e.key === 'ArrowLeft' && cmd && !e.shiftKey) {
+					hasMultiSelect ? shakeAllSelected() : applyShakeAnimation(task.id);
+				// Cmd+Left: pull out one level (bulk if multi-selected)
+				} else if (e.key === 'ArrowLeft' && cmd && !e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!e.repeat && !pullSubtaskOutLayer(task)) {
-						applyShakeAnimation(task.id);
+					if (!e.repeat) {
+						const success = hasMultiSelect ? pullMultiSelectedOutLayer() : pullSubtaskOutLayer(task)
+						if (!success) {
+							hasMultiSelect ? shakeAllSelected() : applyShakeAnimation(task.id)
+						}
 					}
-				} else if (e.key === 'ArrowUp' && cmd && e.shiftKey) {
+				// Cmd+Shift+Up: push and navigate (bulk if multi-selected)
+				} else if (e.key === 'ArrowUp' && cmd && e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!e.repeat && !pushSubtaskIntoTarget(task, 'up', true)) {
-						applyShakeAnimation(task.id, 'vertical');
+					if (!e.repeat) {
+						const success = hasMultiSelect ? pushMultiSelectedIntoTarget('up', true) : pushSubtaskIntoTarget(task, 'up', true)
+						if (!success) {
+							hasMultiSelect ? shakeAllSelected('vertical') : applyShakeAnimation(task.id, 'vertical')
+						}
 					}
-				} else if (e.key === 'ArrowDown' && cmd && e.shiftKey) {
+				// Cmd+Shift+Down: push and navigate (bulk if multi-selected)
+				} else if (e.key === 'ArrowDown' && cmd && e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!e.repeat && !pushSubtaskIntoTarget(task, 'down', true)) {
-						applyShakeAnimation(task.id, 'vertical');
+					if (!e.repeat) {
+						const success = hasMultiSelect ? pushMultiSelectedIntoTarget('down', true) : pushSubtaskIntoTarget(task, 'down', true)
+						if (!success) {
+							hasMultiSelect ? shakeAllSelected('vertical') : applyShakeAnimation(task.id, 'vertical')
+						}
 					}
-				} else if (e.key === 'ArrowLeft' && cmd && e.shiftKey) {
+				// Cmd+Shift+Left: pull and navigate (bulk if multi-selected)
+				} else if (e.key === 'ArrowLeft' && cmd && e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!e.repeat && !pullSubtaskOutLayer(task, true)) {
-						applyShakeAnimation(task.id);
+					if (!e.repeat) {
+						const success = hasMultiSelect ? pullMultiSelectedOutLayer(true) : pullSubtaskOutLayer(task, true)
+						if (!success) {
+							hasMultiSelect ? shakeAllSelected() : applyShakeAnimation(task.id)
+						}
 					}
-				} else if (e.key === 'ArrowRight' && cmd && e.shiftKey) {
+				} else if (e.key === 'ArrowRight' && cmd && e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					applyShakeAnimation(task.id);
-				} else if (e.key === 'ArrowUp' && !e.shiftKey) {
+					hasMultiSelect ? shakeAllSelected() : applyShakeAnimation(task.id);
+				// Plain Up/Down: navigate (clears multi-select)
+				} else if (e.key === 'ArrowUp' && !e.shiftKey && !e.altKey) {
 					e.preventDefault();
+					if (hasMultiSelect) clearMultiSelect()
 					navigateTasks('up');
-				} else if (e.key === 'ArrowDown' && !e.shiftKey) {
+				} else if (e.key === 'ArrowDown' && !e.shiftKey && !e.altKey) {
 					e.preventDefault();
+					if (hasMultiSelect) clearMultiSelect()
 					navigateTasks('down');
-				} else if (e.key === 'ArrowUp' && e.shiftKey) {
+				// Shift+Up/Down: move task (bulk if multi-selected)
+				} else if (e.key === 'ArrowUp' && e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!moveSubtask(task, 'up')) {
-						applyShakeAnimation(task.id, 'vertical');
+					if (hasMultiSelect) {
+						if (!moveMultiSelected('up')) shakeAllSelected('vertical')
+					} else {
+						if (!moveSubtask(task, 'up')) applyShakeAnimation(task.id, 'vertical')
 					}
-				} else if (e.key === 'ArrowDown' && e.shiftKey) {
+				} else if (e.key === 'ArrowDown' && e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!moveSubtask(task, 'down')) {
-						applyShakeAnimation(task.id, 'vertical');
+					if (hasMultiSelect) {
+						if (!moveMultiSelected('down')) shakeAllSelected('vertical')
+					} else {
+						if (!moveSubtask(task, 'down')) applyShakeAnimation(task.id, 'vertical')
 					}
-				} else if (e.key === 'ArrowRight' && e.shiftKey) {
+				// Shift+Right: blocked during multi-select, shake all
+				} else if (e.key === 'ArrowRight' && e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!keyHandler.shiftRight.pressed) {
+					if (hasMultiSelect) {
+						if (!keyHandler.shiftRight.pressed) {
+							keyHandler.shiftRight.pressed = true
+							shakeAllSelected()
+						}
+					} else if (!keyHandler.shiftRight.pressed) {
 						keyHandler.shiftRight.pressed = true;
 						if (task !== currentTask) {
 							navigateIntoSubtask(task);
@@ -982,9 +1242,21 @@
 							applyShakeAnimation(task.id);
 						}
 					}
-				} else if (e.key === 'ArrowLeft' && e.shiftKey) {
+				// Shift+Left: during multi-select, shake at root or clear and navigate out
+				} else if (e.key === 'ArrowLeft' && e.shiftKey && !e.altKey) {
 					e.preventDefault();
-					if (!keyHandler.shiftLeft.pressed) {
+					if (hasMultiSelect && currentTask.id === 'root') {
+						if (!keyHandler.shiftLeft.pressed) {
+							keyHandler.shiftLeft.pressed = true
+							shakeAllSelected()
+						}
+					} else if (hasMultiSelect) {
+						clearMultiSelect()
+						if (!keyHandler.shiftLeft.pressed) {
+							keyHandler.shiftLeft.pressed = true
+							navigateToParentTask()
+						}
+					} else if (!keyHandler.shiftLeft.pressed) {
 						keyHandler.shiftLeft.pressed = true;
 						navigateToParentTask();
 					}
@@ -1124,6 +1396,175 @@
 				return true;
 			}
 
+			// Bulk move: shift entire multi-selected chunk up or down
+			function moveMultiSelected(direction) {
+				const selected = getMultiSelectedTasks()
+				if (selected.length === 0) return false
+
+				const subtasks = currentTask.subtasks
+				const indices = selected.map(t => subtasks.findIndex(s => s.id === t.id)).sort((a, b) => a - b)
+				const topIndex = indices[0]
+				const bottomIndex = indices[indices.length - 1]
+
+				if (direction === 'up' && topIndex <= 0) return false
+				if (direction === 'down' && bottomIndex >= subtasks.length - 1) return false
+
+				// Remove the chunk
+				const chunk = subtasks.splice(topIndex, selected.length)
+				// Re-insert shifted by one
+				const insertAt = direction === 'up' ? topIndex - 1 : topIndex + 1
+				subtasks.splice(insertAt, 0, ...chunk)
+
+				// Ensure render focuses a multi-selected task
+				currentTask.selectedSubtaskId = multiSelectAnchorId
+				renderCurrentView()
+				applyMultiSelectHighlights()
+				scheduleSave()
+				return true
+			}
+
+			// Bulk push: push entire multi-selected chunk into adjacent task
+			function pushMultiSelectedIntoTarget(direction, navigate = false) {
+				const selected = getMultiSelectedTasks()
+				if (selected.length === 0) return false
+
+				if (navigate) {
+					document.documentElement.style.scrollBehavior = 'auto'
+				}
+
+				const subtasks = currentTask.subtasks
+				const indices = selected.map(t => subtasks.findIndex(s => s.id === t.id)).sort((a, b) => a - b)
+				const topIndex = indices[0]
+				const bottomIndex = indices[indices.length - 1]
+
+				// Find target: the task adjacent to the chunk that is NOT in the selection
+				let targetTask = null
+				if (direction === 'up' && topIndex > 0) {
+					targetTask = subtasks[topIndex - 1]
+				} else if (direction === 'down' && bottomIndex < subtasks.length - 1) {
+					targetTask = subtasks[bottomIndex + 1]
+				}
+				if (!targetTask) return false
+
+				// Remove selected tasks from current parent, keeping target
+				const chunk = selected.slice()
+				currentTask.subtasks = currentTask.subtasks.filter(t => !multiSelectedIds.includes(t.id))
+
+				// Add chunk to target's subtasks (at the top, preserving order)
+				targetTask.subtasks.unshift(...chunk)
+
+				// Adjust states for moved tasks
+				for (const t of chunk) {
+					adjustMovedTaskState(t, targetTask)
+				}
+				targetTask.selectedSubtaskId = multiSelectAnchorId
+				updateTaskAndAncestors(currentTask)
+				updateTaskAndAncestors(targetTask)
+
+				if (navigate) {
+					// Navigate into target, keep multi-select
+					currentTask.selectedSubtaskId = targetTask.id
+					taskPath.push(targetTask)
+					currentTask = targetTask
+					updateBreadcrumbs(currentTask)
+					renderCurrentView()
+					applyMultiSelectHighlights()
+				} else {
+					// Stay at current level, chunk is no longer visible
+					clearMultiSelect()
+					renderCurrentView()
+					selectAndFocusTask(targetTask)
+				}
+
+				scheduleSave()
+				return true
+			}
+
+			// Bulk pull: pull entire multi-selected chunk out one level
+			function pullMultiSelectedOutLayer(navigate = false) {
+				if (taskPath.length <= 1) return false
+
+				const selected = getMultiSelectedTasks()
+				if (selected.length === 0) return false
+
+				if (navigate) {
+					document.documentElement.style.scrollBehavior = 'auto'
+				}
+
+				const currentParent = currentTask
+				const grandParent = taskPath[taskPath.length - 2]
+				if (!grandParent) return false
+
+				// Remove chunk from current parent
+				currentParent.subtasks = currentParent.subtasks.filter(t => !multiSelectedIds.includes(t.id))
+
+				// Insert after current parent in grandparent's subtasks, preserving order
+				const parentIndex = grandParent.subtasks.findIndex(t => t.id === currentParent.id)
+				if (parentIndex === -1) {
+					grandParent.subtasks.push(...selected)
+				} else {
+					grandParent.subtasks.splice(parentIndex + 1, 0, ...selected)
+				}
+
+				// Adjust states for moved tasks
+				for (const t of selected) {
+					adjustMovedTaskState(t, grandParent)
+				}
+
+				updateTaskAndAncestors(currentParent)
+				updateTaskAndAncestors(grandParent)
+
+				if (navigate || currentParent.subtasks.length === 0) {
+					// Navigate out to parent level, keep multi-select
+					taskPath.pop()
+					currentTask = taskPath[taskPath.length - 1]
+					// Set selectedSubtaskId to anchor so renderCurrentView focuses a multi-selected task
+					currentTask.selectedSubtaskId = multiSelectAnchorId
+					updateBreadcrumbs(currentTask)
+					renderCurrentView()
+					applyMultiSelectHighlights()
+				} else {
+					// Stay at current level, chunk is gone
+					clearMultiSelect()
+					renderCurrentView()
+					if (currentParent.subtasks.length > 0) {
+						selectAndFocusTask(currentParent.subtasks[0])
+					} else {
+						selectAndFocusTask(currentParent)
+					}
+				}
+
+				scheduleSave()
+				return true
+			}
+
+			// Bulk toggle: uniform toggle for multi-selected tasks
+			function bulkToggleTaskState() {
+				const selected = getMultiSelectedTasks()
+				if (selected.length === 0) return
+
+				// If any are unchecked (state !== 1), check all. Otherwise uncheck all.
+				const anyUnchecked = selected.some(t => t.state !== 1)
+				const newState = anyUnchecked ? 1 : 0
+
+				for (const t of selected) {
+					t.state = newState
+					// Update subtask states recursively
+					function setAllSubtasks(task, state) {
+						task.state = state
+						for (const sub of task.subtasks) {
+							setAllSubtasks(sub, state)
+						}
+					}
+					setAllSubtasks(t, newState)
+				}
+
+				updateTaskAndAncestors(currentTask)
+				currentTask.selectedSubtaskId = multiSelectAnchorId
+				renderCurrentView()
+				applyMultiSelectHighlights()
+				scheduleSave()
+			}
 
 			function addNewSubtask(parentTask, currentSubtask = null) {
 				const newSubtask = { id: generateId(), text: '', state: 0, subtasks: [], selectedSubtaskId: null };
@@ -1287,13 +1728,21 @@
 				if (task !== currentTask) {
 					currentTask.selectedSubtaskId = task.id;
 				}
+				// Re-apply multi-select highlights after clearing
+				if (multiSelectedIds.length > 1) {
+					applyMultiSelectHighlights()
+				}
 				updateBreadcrumbs(task);
-				lastSubtaskDownArrowReleased = isLastSubtask(task);
-				lastSubtaskShiftDownReleased = isLastSubtask(task);
+				// During multi-select, check bottommost selected task for "last subtask" status
+				const bottomTask = multiSelectedIds.length > 1
+					? getMultiSelectedTasks().slice(-1)[0]
+					: task
+				lastSubtaskDownArrowReleased = isLastSubtask(bottomTask);
+				lastSubtaskShiftDownReleased = isLastSubtask(bottomTask);
 				input.focus();
-				
+
 				// Center the active task in the viewport
-				const activeTaskElement = document.querySelector('.task-container.active');
+				const activeTaskElement = input.closest('.task-container');
 				if (activeTaskElement && activeTaskElement.parentElement && activeTaskElement.parentElement.tagName === 'LI') {
 					// Use scrollIntoView with block: "center" to center the element vertically
 					activeTaskElement.scrollIntoView({
@@ -1301,7 +1750,7 @@
 						block: 'center',   // Center vertically
 						inline: 'nearest'  // Don't change horizontal scroll
 					});
-					
+
 					// Re-enable smooth scrolling after all DOM updates and scrolling are complete
 					setTimeout(() => {
 						document.documentElement.style.scrollBehavior = 'smooth';
@@ -1311,7 +1760,9 @@
 
 			function updateBreadcrumbs(selectedTask) {
 				const breadcrumbsContainer = document.getElementById('breadcrumbs');
-				const trail = generateBreadcrumbs(taskPath[0], taskPath, selectedTask.id);
+				// During multi-select, show breadcrumbs as if parent is selected (no deeper traversal)
+				const effectiveId = multiSelectedIds.length > 1 ? currentTask.id : selectedTask.id;
+				const trail = generateBreadcrumbs(taskPath[0], taskPath, effectiveId);
 				breadcrumbsContainer.textContent = trail;
 			}
 
