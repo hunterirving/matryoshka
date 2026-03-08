@@ -60,56 +60,6 @@ your task tree is automatically saved to your browser's local storage after each
 ## themes
 press `F2` to cycle through available themes.
 
-to create a new theme, add a CSS ruleset with the following structure to index.html:
-
-```css
-:root[data-theme="sunflower"] {
-	--background: var(--pollen);
-	--text: var(--loam);
-	--highlight: var(--chlorophyll);
-	--accent: var(--terracotta);
-}
-```
-
-you can also use themes to set custom fonts, etc:
-
-``` css
-:root[data-theme="medieval"] {
-	--background: var(--moss);
-	--text: var(--goat-milk);
-	--highlight: var(--burl);
-	--accent: var(--flame);
-	& input[type="text"] {
-		font-family: BasteleurMoonlight;
-	}
-}
-```
-
-you can store named colors in the `:root` selector at the top of the `<style>` tag:
-
-```css
-:root {
-	--pollen: #f4a127;
-	--loam: #5a352b;
-	--chlorophyll: #5aa83b;
-	--terracotta: #b15c2e;
-
-	--wheat: #d2c3a3;
-	--earth: #4a3c31;
-	--pumpkin: #cb7c52;
-	--tobacco: #7d6c55;
-
-	--moss: #20302f;
-	--goat-milk: #d8d3c9;
-	--burl: #231f20;
-	--flame: #c63728;
-
-	.
-	.
-	.
-}
-```
-
 ## browser compatibility
 this application is designed to run on modern, desktop web browsers with javascript enabled.<br>mobile browsers are technically supported, but a physical keyboard is required (for now).
 
