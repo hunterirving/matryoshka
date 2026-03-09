@@ -3,9 +3,9 @@
 	"short_name": "matryoshka",
 	"icons": [
 		{
-			"src": "resources/icons/icon.svg",
-			"sizes": "any",
-			"type": "image/svg+xml"
+			"src": "resources/icons/icon.png",
+			"sizes": "512x512",
+			"type": "image/png"
 		}
 	],
 	"start_url": "/matryoshka/",

@@ -15,7 +15,7 @@ const ASSETS = [
 	'resources/task-element.js',
 	'resources/theme.js',
 	'resources/main.js',
-	'resources/icons/icon.svg',
+	'resources/icons/icon.png',
 	'resources/fonts/Basteleur-Moonlight.ttf',
 ];
 
