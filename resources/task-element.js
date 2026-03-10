@@ -24,6 +24,9 @@ function createTaskElement(task, isParentTask = false) {
 	taskInput.type = 'text';
 	taskInput.value = task.text;
 	taskInput.setAttribute('autocomplete', 'off');
+	taskInput.setAttribute('spellcheck', 'false');
+	taskInput.setAttribute('autocorrect', 'off');
+	taskInput.setAttribute('autocapitalize', 'off');
 
 	taskInput.addEventListener('mousedown', function(e) {
 		e.stopPropagation();
