@@ -1,4 +1,4 @@
-const CACHE_NAME = 'matryoshka-v1.4';
+const CACHE_NAME = 'matryoshka-v1.5';
 const ASSETS = [
 	'./',
 	'index.html',
@@ -43,7 +43,7 @@ self.addEventListener('activate', (event) => {
 // Serve from cache, fall back to network, and update cache
 self.addEventListener('fetch', (event) => {
 	event.respondWith(
-		caches.match(event.request).then((cached) => {
+		caches.open(CACHE_NAME).then((cache) => cache.match(event.request)).then((cached) => {
 			const fetchPromise = fetch(event.request).then((response) => {
 				// Only cache same-origin, successful GET requests
 				if (response.ok && event.request.method === 'GET') {
