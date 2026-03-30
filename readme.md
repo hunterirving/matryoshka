@@ -48,6 +48,9 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `⌘ + X` cut task text (or highlighted substring)
 - `⌘ + V` paste text from the clipboard
 
+### theming
+- press `F2` to cycle through available themes
+
 ## data persistence
 your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.
 
@@ -57,16 +60,13 @@ your task tree is automatically saved to your browser's local storage after each
 - `⌘ + S` export tasks to .txt file
 - `⌘ + O` import tasks from .txt file
 
-## themes
-press `F2` to cycle through available themes.
-
 ## browser compatibility
-this application is designed to run on modern, desktop web browsers with javascript enabled.<br>mobile browsers are technically supported, but a physical keyboard is required (for now).
+matryoshka is designed to run on modern, desktop web browsers with javascript enabled.<br>mobile browsers are technically supported, but a physical keyboard is required (for now).
 
 ## privacy
 all data is stored locally on your machine.<br>no data is sent to or stored on any external servers.
 
 ## licenses
-this project is licensed under the <a href="/LICENSE.txt">GNU General Public License v3.0</a>.
+this project is licensed under the <a href="LICENSE.txt">GNU General Public License v3.0</a>.
 
-the <a href="https://velvetyne.fr/fonts/basteleur/">Basteleur</a> font by <a href="https://keussel.studio/">Keussel</a> (distributed by <a href="https://velvetyne.fr/">Velvetyne</a>) is licensed under the <a href="/resources/fonts/LICENSE (Basteleur Moonlight).txt">SIL Open Font License, version 1.1</a>.
+the <a href="https://velvetyne.fr/fonts/basteleur/">Basteleur</a> font by <a href="https://keussel.studio/">Keussel</a> (distributed by <a href="https://velvetyne.fr/">Velvetyne</a>) is licensed under the <a href="resources/fonts/LICENSE (Basteleur Moonlight).txt">SIL Open Font License, version 1.1</a>.
