@@ -7,12 +7,11 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 
 <i><b>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</b></i> (physical keyboard required).
 
-alternatively, use ```./run.py``` to run matryoshka locally, or try installing it as a <a href="https://hunterirving.github.io/web_workshop/pages/pwa">Progressive Web App</a> that works completely offline.
-
 ### key features
 - unlimited subtask depth
 - intuitive keyboard controls
 - automatically saves as you edit
+- installable as a <a href="https://hunterirving.github.io/web_workshop/pages/pwa">Progressive Web App</a> that works completely offline
 
 ### quickstart
 1. press the `Return` / `Enter` key to add subtasks to the root "todo" task
