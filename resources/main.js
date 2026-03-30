@@ -77,7 +77,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	// Initialize
-	getThemesFromCSS();
 	setInitialTheme();
 	renderCurrentView();
 	selectFirstSubtask();

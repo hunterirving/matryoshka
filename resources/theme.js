@@ -1,19 +1,4 @@
-// Theme: theme detection, cycling, and persistence
-
-function getThemesFromCSS() {
-	for (var sheet of document.styleSheets) {
-		try {
-			for (var rule of sheet.cssRules) {
-				var match = rule.selectorText && rule.selectorText.match(/:root\[data-theme="([^"]+)"\]/);
-				if (match) {
-					state.themes.push(match[1]);
-				}
-			}
-		} catch (e) {
-			// Skip cross-origin stylesheets
-		}
-	}
-}
+// Theme: theme selection, cycling, and persistence
 
 function cycleTheme() {
 	state.currentThemeIndex = (state.currentThemeIndex + 1) % state.themes.length;

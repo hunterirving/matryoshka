@@ -10,7 +10,7 @@ var state = {
 	saveTimer: null,
 	currentThemeIndex: 0,
 	isF2Pressed: false,
-	themes: [],
+	themes: ['gak', 'swamp', 'sunflower', 'harvest', 'medieval', 'woodstove', 'sugar', 'vineyard'],
 	isInWheelEvent: false,
 
 	// Multi-select state
