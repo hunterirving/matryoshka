@@ -275,6 +275,7 @@ html {
 	scrollbar-color: color-mix(in srgb, var(--text) 75%, transparent) color-mix(in srgb, var(--background) 75%, transparent);
 }
 body {
+	zoom: 1.2;
 	font-family: Arial, sans-serif;
 	max-width: 800px;
 	margin: 0 auto;
