@@ -88,7 +88,7 @@
 	--highlight: var(--burl);
 	--accent: var(--flame);
 	--icon: '⚔️';
-	& input[type="text"] {
+	.task-text {
 		font-family: BasteleurMoonlight, Arial, sans-serif;
 	}
 }
@@ -99,7 +99,7 @@
 	--highlight: var(--ash);
 	--accent: var(--cinder);
 	--icon: '🪵';
-	& input[type="text"] {
+	.task-text {
 		font-family: BasteleurMoonlight, Arial, sans-serif;
 	}
 	.parent-task {
@@ -123,10 +123,10 @@
 	.custom-checkbox:checked + .checkbox-label::before {
 		display: none;
 	}
-	& input[type="text"] {
+	.task-text {
 		text-shadow: 1px 1px 1px var(--cola);
 	}
-	input[type="text"]::selection {
+	.task-text::selection {
 		color: var(--text);
 	}
 }
@@ -137,10 +137,10 @@
 	--highlight: var(--muscat);
 	--accent: var(--muscat);
 	--icon: '🍇';
-	& input[type="text"] {
+	.task-text {
 		font-family: BasteleurMoonlight;
 	}
-	input[type="text"]::selection {
+	.task-text::selection {
 		background-color: var(--background);
 		color: var(--text);
 		text-shadow: none;
@@ -148,7 +148,7 @@
 	.active {
 		border-radius: 30px 0px 0px 30px;
 	}
-	.active input[type="text"] {
+	.active .task-text {
 		color: var(--bloom);
 		text-shadow: 1px 1px 2px black;
 	}
@@ -200,17 +200,17 @@
 	--highlight: var(--bakelite);
 	--accent: var(--mothball);
 	--icon: '👺';
-	& input[type="text"] {
+	.task-text {
 		font-family: BasteleurMoonlight, Arial, sans-serif;
 	}
-	.active input[type="text"] {
+	.active .task-text {
 		color: var(--mothball);
 		text-shadow: 1px 1px 1px var(--bakelite);
 	}
 	.parent-task {
 		--text: var(--mothball)
 	}
-	.parent-task input[type="text"] {
+	.parent-task .task-text {
 		text-shadow: 1px 1px 1px var(--bakelite);
 	}
 	.checkbox-label {
@@ -238,7 +238,7 @@
 	.active .custom-checkbox:indeterminate + .checkbox-label::before {
 		background-color: var(--mothball);
 	}
-	input[type="text"]::selection {
+	.task-text::selection {
 		background-color: var(--lipstick);
 		color: var(--mothball);
 	}
@@ -287,23 +287,28 @@ ul {
 	list-style-type: none;
 	padding-left: 20px;
 }
-input[type="text"] {
-	border: none;
-	background: transparent;
+.task-text {
 	font-size: 1.17em;
 	font-weight: bold;
-	width: calc(100% - 30px);
-	margin-left: 5px;
-	padding: 5px;
+	flex: 1;
+	min-width: 0;
+	margin-left: 10px;
+	padding: 5px 5px 5px 0;
 	color: var(--text);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	cursor: text;
+	line-height: normal;
+	min-height: 1.17em;
 }
-input[type="text"]:focus {
+.task-text:focus {
 	outline: none;
 }
-input[type="text"]::selection {
+.active .task-text {
+	text-overflow: clip;
+}
+.task-text::selection {
 	background-color: var(--accent);
 	color: var(--background);
 }
@@ -312,6 +317,7 @@ input[type="text"]::selection {
 	align-items: center;
 	margin: 5px 0;
 	padding-left: 11px;
+	padding-right: 11px;
 	padding-top: 4px;
 	padding-bottom: 4px;
 }

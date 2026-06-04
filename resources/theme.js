@@ -24,6 +24,10 @@ function setTheme(theme) {
 	var backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--background').trim();
 	document.getElementById('themeColor').setAttribute('content', backgroundColor);
 	updateFavicon();
+	rescrollActiveCaret();
+	if (document.fonts && document.fonts.ready) {
+		document.fonts.ready.then(rescrollActiveCaret);
+	}
 }
 
 function setInitialTheme() {

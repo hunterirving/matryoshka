@@ -7,8 +7,8 @@ function updateCheckboxState(checkbox, taskState) {
 
 function toggleTaskState(task) {
 	// Save cursor position before re-rendering
-	var taskInput = document.querySelector(`.task-container[data-id="${task.id}"] input[type="text"]`);
-	var cursorPos = taskInput ? taskInput.selectionStart : null;
+	var taskInput = document.querySelector(`.task-container[data-id="${task.id}"] .task-text`);
+	var cursorPos = taskInput ? getCaretOffset(taskInput) : null;
 
 	if (task.state === 1) {
 		if (task.subtasks.length === 0 || !task.subtasks.every(t => t.state === 1)) {

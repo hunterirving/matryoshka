@@ -1,5 +1,71 @@
 // Render: view rendering, breadcrumbs, UI updates, and shared DOM helpers
 
+function getCaretOffset(el) {
+	var sel = window.getSelection();
+	if (!sel || sel.rangeCount === 0 || !el.contains(sel.anchorNode)) return null;
+	var range = sel.getRangeAt(0);
+	var pre = range.cloneRange();
+	pre.selectNodeContents(el);
+	pre.setEnd(range.endContainer, range.endOffset);
+	return pre.toString().length;
+}
+
+function setCaretOffset(el, offset) {
+	el.focus();
+	var node = el.firstChild;
+	var range = document.createRange();
+	var sel = window.getSelection();
+	var pos = 0;
+	if (node && node.nodeType === Node.TEXT_NODE) {
+		pos = Math.max(0, Math.min(offset, node.textContent.length));
+		range.setStart(node, pos);
+	} else {
+		range.setStart(el, 0);
+	}
+	range.collapse(true);
+	sel.removeAllRanges();
+	sel.addRange(range);
+	// browsers don't auto-scroll a programmatic caret, so do it manually
+	scrollCaretIntoView(el, range, pos);
+}
+
+function scrollCaretIntoView(el, range, pos) {
+	if (pos >= el.textContent.length) {
+		el.scrollLeft = el.scrollWidth;
+		return;
+	}
+	if (pos <= 0) {
+		el.scrollLeft = 0;
+		return;
+	}
+	var caretRect = range.getBoundingClientRect();
+	var elRect = el.getBoundingClientRect();
+	var pad = parseFloat(getComputedStyle(el).paddingRight) || 0;
+	if (caretRect.right > elRect.right - pad) {
+		el.scrollLeft += caretRect.right - (elRect.right - pad);
+	} else if (caretRect.left < elRect.left) {
+		el.scrollLeft -= elRect.left - caretRect.left;
+	}
+}
+
+function selectAllText(el) {
+	var range = document.createRange();
+	range.selectNodeContents(el);
+	var sel = window.getSelection();
+	sel.removeAllRanges();
+	sel.addRange(range);
+}
+
+function rescrollActiveCaret() {
+	var el = document.querySelector('.task-container.active .task-text');
+	if (el) setCaretOffset(el, getCaretOffset(el) || 0);
+}
+
+function isSelectionCollapsed() {
+	var sel = window.getSelection();
+	return !sel || sel.isCollapsed;
+}
+
 function generateBreadcrumbs(rootTask, currentPath, selectedTaskId) {
 	var breadcrumbs = '';
 	var currentTask = rootTask;
@@ -52,17 +118,17 @@ function applyShakeAnimation(taskId, direction = 'horizontal') {
 }
 
 function selectAndFocusTask(task, cursorPos) {
-	var taskInput = document.querySelector(`.task-container[data-id="${task.id}"] input[type="text"]`);
+	var taskInput = document.querySelector(`.task-container[data-id="${task.id}"] .task-text`);
 	if (taskInput) {
 		taskInput.focus();
-		var pos = cursorPos != null ? cursorPos : taskInput.value.length;
-		taskInput.setSelectionRange(pos, pos);
+		var pos = cursorPos != null ? cursorPos : taskInput.textContent.length;
+		setCaretOffset(taskInput, pos);
 		setActiveTask(taskInput, task);
 	}
 }
 
 function placeCursorAtBeginning(input) {
-	input.setSelectionRange(0, 0);
+	input.scrollLeft = 0;
 }
 
 function setActiveTask(input, task) {
@@ -121,12 +187,14 @@ function selectFirstSubtask() {
 
 function handleCopyAndCut(e) {
 	if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'x')) {
-		var activeTaskInput = document.querySelector('.task-container.active input[type="text"]');
+		var activeTaskInput = document.querySelector('.task-container.active .task-text');
 		if (activeTaskInput) {
 			e.preventDefault();
 
-			if (activeTaskInput.selectionStart === activeTaskInput.selectionEnd) {
-				activeTaskInput.select();
+			// With no selection, act on the whole task text
+			var collapsed = isSelectionCollapsed();
+			if (collapsed) {
+				selectAllText(activeTaskInput);
 			}
 
 			if (e.key === 'c') {
@@ -138,13 +206,14 @@ function handleCopyAndCut(e) {
 				var taskId = taskContainer.dataset.id;
 				var task = state.currentTask.id === taskId ? state.currentTask : state.currentTask.subtasks.find(t => t.id === taskId);
 				if (task) {
-					task.text = activeTaskInput.value;
+					task.text = activeTaskInput.textContent;
 					scheduleSave();
 				}
 			}
 
-			if (e.key === 'c' && activeTaskInput.selectionStart === 0 && activeTaskInput.selectionEnd === activeTaskInput.value.length) {
-				activeTaskInput.setSelectionRange(activeTaskInput.value.length, activeTaskInput.value.length);
+			// After a copy that auto-selected everything, collapse the caret to the end
+			if (e.key === 'c' && collapsed) {
+				setCaretOffset(activeTaskInput, activeTaskInput.textContent.length);
 			}
 		}
 	}

@@ -4,7 +4,7 @@ document.addEventListener('click', function(e) {
 	if (!e.target.closest('.task-container')) {
 		var activeTask = document.querySelector('.task-container.active');
 		if (activeTask) {
-			var taskInput = activeTask.querySelector('input[type="text"]');
+			var taskInput = activeTask.querySelector('.task-text');
 			taskInput.focus();
 		} else {
 			selectFirstSubtask();
@@ -65,10 +65,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.addEventListener('keydown', handleSave);
 	document.addEventListener('keydown', handleOpen);
 
-	// Reset cursor on non-focused inputs
+	// Reset cursor on non-focused task-text elements
 	state.appContainer.addEventListener('focusin', function(e) {
-		if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
-			document.querySelectorAll('input[type="text"]').forEach(input => {
+		if (e.target.classList && e.target.classList.contains('task-text')) {
+			document.querySelectorAll('.task-text').forEach(input => {
 				if (input !== e.target) {
 					placeCursorAtBeginning(input);
 				}
@@ -80,4 +80,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	setInitialTheme();
 	renderCurrentView();
 	selectFirstSubtask();
+
+	// re-pin the active caret's scroll once layout settles and once fonts load
+	requestAnimationFrame(rescrollActiveCaret);
+	if (document.fonts && document.fonts.ready) {
+		document.fonts.ready.then(rescrollActiveCaret);
+	}
 });

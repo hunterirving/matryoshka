@@ -20,10 +20,10 @@ function createTaskElement(task, isParentTask = false) {
 	checkboxLabel.className = 'checkbox-label';
 	checkboxLabel.setAttribute('for', `checkbox-${task.id}`);
 
-	var taskInput = document.createElement('input');
-	taskInput.type = 'text';
-	taskInput.value = task.text;
-	taskInput.setAttribute('autocomplete', 'off');
+	var taskInput = document.createElement('div');
+	taskInput.className = 'task-text';
+	taskInput.contentEditable = 'plaintext-only';
+	taskInput.textContent = task.text;
 	taskInput.setAttribute('spellcheck', 'false');
 	taskInput.setAttribute('autocorrect', 'off');
 	taskInput.setAttribute('autocapitalize', 'off');
@@ -76,15 +76,15 @@ function createTaskElement(task, isParentTask = false) {
 				for (var t of selected) {
 					if (t.text.length > 0) {
 						t.text = t.text.slice(0, -1);
-						var inp = document.querySelector(`.task-container[data-id="${t.id}"] input[type="text"]`);
-						if (inp) inp.value = t.text;
+						var inp = document.querySelector(`.task-container[data-id="${t.id}"] .task-text`);
+						if (inp) inp.textContent = t.text;
 					}
 				}
 				keyHandler.backspace.canDelete = false;
 				scheduleSave();
 				return;
 			}
-			if (taskInput.value === '' && keyHandler.backspace.canDelete && state.multiSelectedIds.length <= 1) {
+			if (taskInput.textContent === '' && keyHandler.backspace.canDelete && state.multiSelectedIds.length <= 1) {
 				e.preventDefault();
 				if (task !== state.taskPath[0]) {
 					keyHandler.backspace.blocked = true;
@@ -97,7 +97,7 @@ function createTaskElement(task, isParentTask = false) {
 				} else {
 					applyShakeAnimation(task.id);
 				}
-			} else if (taskInput.value !== '') {
+			} else if (taskInput.textContent !== '') {
 				keyHandler.backspace.canDelete = false;
 			}
 		} else if (e.key === 'Enter' && !e.shiftKey) {
@@ -204,7 +204,13 @@ function createTaskElement(task, isParentTask = false) {
 	taskInput.addEventListener('keydown', handleCopyAndCut);
 	taskInput.addEventListener('input', (e) => {
 		var oldText = task.text;
-		task.text = taskInput.value;
+		// Keep text single-line: strip any newlines a paste/IME may introduce
+		if (taskInput.textContent.indexOf('\n') !== -1) {
+			var caret = getCaretOffset(taskInput);
+			taskInput.textContent = taskInput.textContent.replace(/\n/g, '');
+			if (caret != null) setCaretOffset(taskInput, caret);
+		}
+		task.text = taskInput.textContent;
 		// Propagate edits to all other multi-selected tasks
 		if (state.multiSelectedIds.length > 1 && state.multiSelectedIds.includes(task.id)) {
 			var otherSelected = getMultiSelectedTasks().filter(t => t.id !== task.id);
@@ -212,25 +218,26 @@ function createTaskElement(task, isParentTask = false) {
 			if (e.inputType === 'insertText' && e.data) {
 				for (var t of otherSelected) {
 					t.text = t.text + e.data;
-					var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] input[type="text"]`);
-					if (otherInput) otherInput.value = t.text;
+					var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] .task-text`);
+					if (otherInput) otherInput.textContent = t.text;
 				}
 			} else if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
 				for (var t of otherSelected) {
 					if (t.text.length > 0) {
 						t.text = t.text.slice(0, -1);
 					}
-					var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] input[type="text"]`);
-					if (otherInput) otherInput.value = t.text;
+					var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] .task-text`);
+					if (otherInput) otherInput.textContent = t.text;
 				}
 			} else if (e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop') {
-				var addedLen = taskInput.value.length - oldText.length;
+				var addedLen = taskInput.textContent.length - oldText.length;
 				if (addedLen > 0) {
-					var pastedText = taskInput.value.slice(taskInput.selectionStart - addedLen, taskInput.selectionStart);
+					var caretPos = getCaretOffset(taskInput);
+					var pastedText = taskInput.textContent.slice(caretPos - addedLen, caretPos);
 					for (var t of otherSelected) {
 						t.text = t.text + pastedText;
-						var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] input[type="text"]`);
-						if (otherInput) otherInput.value = t.text;
+						var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] .task-text`);
+						if (otherInput) otherInput.textContent = t.text;
 					}
 				}
 			}
