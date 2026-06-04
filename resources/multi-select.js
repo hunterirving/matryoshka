@@ -14,6 +14,14 @@ function getMultiSelectedTasks() {
 	return state.currentTask.subtasks.filter(t => state.multiSelectedIds.includes(t.id));
 }
 
+// id of the currently-focused selected task, or anchor if focus isn't on one;
+// extendMultiSelect needs focus on the selection's moving edge after a move
+function getFocusedSelectedId() {
+	var container = document.activeElement ? document.activeElement.closest('.task-container') : null;
+	var id = container ? container.getAttribute('data-id') : null;
+	return state.multiSelectedIds.includes(id) ? id : state.multiSelectAnchorId;
+}
+
 function applyMultiSelectHighlights() {
 	for (var id of state.multiSelectedIds) {
 		var container = document.querySelector(`.task-container[data-id="${id}"]`);
@@ -75,6 +83,9 @@ function moveMultiSelected(direction) {
 	var selected = getMultiSelectedTasks();
 	if (selected.length === 0) return false;
 
+	// keep focus on the edge that was focused, so a follow-up extend/contract still works
+	var refocusId = getFocusedSelectedId();
+
 	var subtasks = state.currentTask.subtasks;
 	var indices = selected.map(t => subtasks.findIndex(s => s.id === t.id)).sort((a, b) => a - b);
 	var topIndex = indices[0];
@@ -87,7 +98,7 @@ function moveMultiSelected(direction) {
 	var insertAt = direction === 'up' ? topIndex - 1 : topIndex + 1;
 	subtasks.splice(insertAt, 0, ...chunk);
 
-	state.currentTask.selectedSubtaskId = state.multiSelectAnchorId;
+	state.currentTask.selectedSubtaskId = refocusId;
 	renderCurrentView();
 	applyMultiSelectHighlights();
 	scheduleSave();
@@ -97,6 +108,8 @@ function moveMultiSelected(direction) {
 function pushMultiSelectedIntoTarget(direction, navigate = false) {
 	var selected = getMultiSelectedTasks();
 	if (selected.length === 0) return false;
+
+	var refocusId = getFocusedSelectedId();
 
 	if (navigate) {
 		document.documentElement.style.scrollBehavior = 'auto';
@@ -123,7 +136,7 @@ function pushMultiSelectedIntoTarget(direction, navigate = false) {
 	for (var t of chunk) {
 		adjustMovedTaskState(t, targetTask);
 	}
-	targetTask.selectedSubtaskId = state.multiSelectAnchorId;
+	targetTask.selectedSubtaskId = refocusId;
 	updateTaskAndAncestors(state.currentTask);
 	updateTaskAndAncestors(targetTask);
 
@@ -149,6 +162,8 @@ function pullMultiSelectedOutLayer(navigate = false) {
 
 	var selected = getMultiSelectedTasks();
 	if (selected.length === 0) return false;
+
+	var refocusId = getFocusedSelectedId();
 
 	if (navigate) {
 		document.documentElement.style.scrollBehavior = 'auto';
@@ -177,7 +192,7 @@ function pullMultiSelectedOutLayer(navigate = false) {
 	if (navigate || currentParent.subtasks.length === 0) {
 		state.taskPath.pop();
 		state.currentTask = state.taskPath[state.taskPath.length - 1];
-		state.currentTask.selectedSubtaskId = state.multiSelectAnchorId;
+		state.currentTask.selectedSubtaskId = refocusId;
 		updateBreadcrumbs(state.currentTask);
 		renderCurrentView();
 		applyMultiSelectHighlights();
