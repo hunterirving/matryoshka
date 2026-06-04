@@ -13,7 +13,6 @@
 	--pollen: #f4a127;
 	--loam: #5a352b;
 	--chlorophyll: #5aa83b;
-	--terracotta: #b15c2e;
 
 	--wheat: #d2c3a3;
 	--earth: #4a3c31;
@@ -38,6 +37,10 @@
 	--muscat: #663399;
 	--cask: #722f37;
 	--bloom: #f8f6ff;
+
+	--lipstick: #da0531;
+	--bakelite: #221917;
+	--mothball: #f1e7c9;
 }
 
 /* custom fonts */
@@ -67,7 +70,7 @@
 	--background: var(--pollen);
 	--text: var(--loam);
 	--highlight: var(--chlorophyll);
-	--accent: var(--terracotta);
+	--accent: var(--loam);
 	--icon: '🌻';
 }
 
@@ -189,6 +192,56 @@
 		transform: translate(-50%, -50%);
 	}
 	scrollbar-color: color-mix(in srgb, var(--muscat) 75%, transparent) color-mix(in srgb, var(--bloom) 75%, transparent);
+}
+
+:root[data-theme="goblin"] {
+	--background: var(--lipstick);
+	--text: var(--bakelite);
+	--highlight: var(--bakelite);
+	--accent: var(--mothball);
+	--icon: '👺';
+	& input[type="text"] {
+		font-family: BasteleurMoonlight, Arial, sans-serif;
+	}
+	.active input[type="text"] {
+		color: var(--mothball);
+		text-shadow: 1px 1px 1px var(--bakelite);
+	}
+	.parent-task {
+		--text: var(--mothball)
+	}
+	.parent-task input[type="text"] {
+		text-shadow: 1px 1px 1px var(--bakelite);
+	}
+	.checkbox-label {
+		border-color: var(--bakelite);
+	}
+	.custom-checkbox:checked + .checkbox-label {
+		background-color: var(--bakelite);
+	}
+	.custom-checkbox:checked + .checkbox-label::before {
+		border-color: var(--lipstick);
+	}
+	.custom-checkbox:indeterminate + .checkbox-label::before {
+		background-color: var(--bakelite);
+	}
+	.active .checkbox-label {
+		border-color: var(--mothball);
+		background-color: var(--bakelite);
+	}
+	.active .custom-checkbox:checked + .checkbox-label {
+		background-color: var(--mothball);
+	}
+	.active .custom-checkbox:checked + .checkbox-label::before {
+		border-color: var(--bakelite);
+	}
+	.active .custom-checkbox:indeterminate + .checkbox-label::before {
+		background-color: var(--mothball);
+	}
+	input[type="text"]::selection {
+		background-color: var(--lipstick);
+		color: var(--mothball);
+	}
 }
 
 /* interface styling */
