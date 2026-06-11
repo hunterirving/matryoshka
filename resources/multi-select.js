@@ -56,6 +56,28 @@ function getMultiRange(t) {
 	return end > start ? { start: start, end: end } : null;
 }
 
+// plain Left/Right during multi-select: step every non-focused line's caret
+// (the focused line is handled natively or by the caller)
+function stepMultiCarets(key) {
+	var focusedContainer = document.activeElement ? document.activeElement.closest('.task-container') : null;
+	var focusedId = focusedContainer ? focusedContainer.dataset.id : null;
+	for (var t of getMultiSelectedTasks()) {
+		if (t.id === focusedId) continue;
+		var range = getMultiRange(t);
+		if (range) {
+			// arrows collapse a selection to its start or end, like native
+			state.multiCaretOffsets[t.id] = key === 'ArrowLeft' ? range.start : range.end;
+			delete state.multiSelectRanges[t.id];
+		} else {
+			var off = clampCaret(t.text, state.multiCaretOffsets[t.id]);
+			state.multiCaretOffsets[t.id] = key === 'ArrowLeft'
+				? prevGraphemeBoundary(t.text, off)
+				: nextGraphemeBoundary(t.text, off);
+		}
+	}
+	renderSimCarets();
+}
+
 function insertAtMultiCaret(t, str) {
 	var range = getMultiRange(t);
 	var start = range ? range.start : clampCaret(t.text, state.multiCaretOffsets[t.id]);
@@ -314,8 +336,10 @@ function moveMultiSelected(direction) {
 	subtasks.splice(insertAt, 0, ...chunk);
 
 	state.currentTask.selectedSubtaskId = refocusId;
+	var savedSelection = captureActiveSelection();
 	renderCurrentView();
 	applyMultiSelectHighlights();
+	restoreActiveSelection(savedSelection);
 	scheduleSave();
 	return true;
 }

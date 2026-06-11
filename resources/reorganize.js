@@ -17,8 +17,10 @@ function moveSubtask(subtask, direction) {
 		return false;
 	}
 
+	var savedSelection = captureActiveSelection();
 	renderCurrentView();
 	selectAndFocusTask(subtask);
+	restoreActiveSelection(savedSelection);
 	scheduleSave();
 	return true;
 }

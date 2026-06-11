@@ -58,7 +58,45 @@ function selectAllText(el) {
 
 function rescrollActiveCaret() {
 	var el = document.querySelector('.task-container.active .task-text');
-	if (el) setCaretOffset(el, getCaretOffset(el) || 0);
+	var focused = document.activeElement;
+	// in multi-select every row is .active; prefer the truly focused line
+	if (focused && focused.classList && focused.classList.contains('task-text')) el = focused;
+	if (!el) return;
+	var sel = window.getSelection();
+	// keep a live range selection; resetting the caret would collapse it
+	if (sel && sel.rangeCount > 0 && !sel.isCollapsed && el.contains(sel.anchorNode)) {
+		scrollCaretIntoView(el, sel.getRangeAt(0), getCaretOffset(el) || 0);
+		renderSimCarets();
+		return;
+	}
+	setCaretOffset(el, getCaretOffset(el) || 0);
+}
+
+// capture/restore the focused line's text selection across a re-render,
+// which destroys the DOM nodes the live selection points at
+function captureActiveSelection() {
+	var el = document.activeElement;
+	if (!el || !el.classList || !el.classList.contains('task-text')) return null;
+	var sel = window.getSelection();
+	if (!sel || sel.rangeCount === 0 || sel.isCollapsed || !el.contains(sel.anchorNode)) return null;
+	var container = el.closest('.task-container');
+	if (!container) return null;
+	var end = getCaretOffset(el);
+	if (end == null) return null;
+	return { id: container.dataset.id, start: end - sel.toString().length, end: end };
+}
+
+function restoreActiveSelection(saved) {
+	if (!saved) return;
+	var input = document.querySelector(`.task-container[data-id="${saved.id}"] .task-text`);
+	var node = input ? input.firstChild : null;
+	if (!node || node.nodeType !== Node.TEXT_NODE) return;
+	var range = document.createRange();
+	range.setStart(node, Math.max(0, Math.min(saved.start, node.textContent.length)));
+	range.setEnd(node, Math.max(0, Math.min(saved.end, node.textContent.length)));
+	var sel = window.getSelection();
+	sel.removeAllRanges();
+	sel.addRange(range);
 }
 
 function isSelectionCollapsed() {

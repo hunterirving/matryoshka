@@ -42,6 +42,29 @@ function handleKeyDown(e, task) {
 		return;
 	}
 
+	// Alt+Left/Right: act like a plain arrow instead of the native word jump;
+	// native is prevented, so the focused caret steps by simulation
+	if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.altKey && !cmd && !e.shiftKey) {
+		e.preventDefault();
+		var input = e.currentTarget;
+		var sel = window.getSelection();
+		var end = getCaretOffset(input);
+		if (end != null) {
+			var target;
+			if (sel && !sel.isCollapsed) {
+				// arrows collapse a selection to its start or end, like native
+				target = e.key === 'ArrowLeft' ? end - sel.toString().length : end;
+			} else {
+				target = e.key === 'ArrowLeft'
+					? prevGraphemeBoundary(input.textContent, end)
+					: nextGraphemeBoundary(input.textContent, end);
+			}
+			setCaretOffset(input, target);
+		}
+		if (hasMultiSelect) stepMultiCarets(e.key);
+		return;
+	}
+
 	// Shift+Enter: toggle task state (bulk if multi-selected)
 	if (e.key === 'Enter' && e.shiftKey) {
 		e.preventDefault();
@@ -180,23 +203,7 @@ function handleKeyDown(e, task) {
 	// Plain Left/Right during multi-select: every line's caret steps together
 	} else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.shiftKey && !e.altKey && hasMultiSelect) {
 		// the focused line moves natively; selectionchange syncs its offset
-		var focusedContainer = document.activeElement ? document.activeElement.closest('.task-container') : null;
-		var focusedId = focusedContainer ? focusedContainer.dataset.id : null;
-		for (var t of getMultiSelectedTasks()) {
-			if (t.id === focusedId) continue;
-			var range = getMultiRange(t);
-			if (range) {
-				// arrows collapse a selection to its start or end, like native
-				state.multiCaretOffsets[t.id] = e.key === 'ArrowLeft' ? range.start : range.end;
-				delete state.multiSelectRanges[t.id];
-			} else {
-				var off = clampCaret(t.text, state.multiCaretOffsets[t.id]);
-				state.multiCaretOffsets[t.id] = e.key === 'ArrowLeft'
-					? prevGraphemeBoundary(t.text, off)
-					: nextGraphemeBoundary(t.text, off);
-			}
-		}
-		renderSimCarets();
+		stepMultiCarets(e.key);
 	// Cmd+A during multi-select: select all text across all selected lines
 	} else if ((e.key === 'a' || e.key === 'A') && cmd && !e.shiftKey && !e.altKey && hasMultiSelect) {
 		e.preventDefault();
