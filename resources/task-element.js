@@ -31,6 +31,26 @@ function nextGraphemeBoundary(text, offset) {
 	return next;
 }
 
+// native deletion splits ZWJ emoji in firefox; when the grapheme next to the
+// caret spans multiple code units, delete it whole and report handled
+function deleteWholeGrapheme(taskInput, direction) {
+	var sel = window.getSelection();
+	var off = getCaretOffset(taskInput);
+	if (!sel || !sel.isCollapsed || off == null) return false;
+	var text = taskInput.textContent;
+	var start = direction === 'backward' ? prevGraphemeBoundary(text, off) : off;
+	var end = direction === 'backward' ? off : nextGraphemeBoundary(text, off);
+	if (end - start <= 1) return false;
+	taskInput.textContent = text.slice(0, start) + text.slice(end);
+	setCaretOffset(taskInput, start);
+	// synthetic input event so the regular listener syncs task.text and saves
+	taskInput.dispatchEvent(new InputEvent('input', {
+		inputType: direction === 'backward' ? 'deleteContentBackward' : 'deleteContentForward',
+		bubbles: true
+	}));
+	return true;
+}
+
 function createTaskElement(task, isParentTask = false) {
 	var taskContainer = document.createElement('div');
 	taskContainer.className = 'task-container';
@@ -105,17 +125,8 @@ function createTaskElement(task, isParentTask = false) {
 				// Some tasks still have text: delete each line's selection,
 				// or the grapheme before its caret
 				e.preventDefault();
-				pushMultiUndo();
-				var focusedOffset = getCaretOffset(taskInput);
-				if (focusedOffset != null) state.multiCaretOffsets[task.id] = focusedOffset;
-				for (var t of selected) {
-					deleteAtMultiCaret(t, 'backward');
-				}
-				// rewriting textContent collapses the (hidden) native caret; restore it
-				setCaretOffset(taskInput, clampCaret(task.text, state.multiCaretOffsets[task.id]));
-				renderSimCarets();
+				deleteAcrossMultiSelection(task, taskInput, 'backward');
 				keyHandler.backspace.canDelete = false;
-				scheduleSave();
 				return;
 			}
 			if (taskInput.textContent === '' && keyHandler.backspace.canDelete && state.multiSelectedIds.length <= 1) {
@@ -133,6 +144,16 @@ function createTaskElement(task, isParentTask = false) {
 				}
 			} else if (taskInput.textContent !== '') {
 				keyHandler.backspace.canDelete = false;
+				if (deleteWholeGrapheme(taskInput, 'backward')) e.preventDefault();
+			}
+		} else if (e.key === 'Delete') {
+			if (state.multiSelectedIds.length > 1) {
+				e.preventDefault();
+				deleteAcrossMultiSelection(task, taskInput, 'forward');
+			} else if (deleteWholeGrapheme(taskInput, 'forward')) {
+				e.preventDefault();
+			} else {
+				handleKeyDown(e, task);
 			}
 		} else if (e.key === 'Enter' && !e.shiftKey) {
 			if (keyHandler.enter.blocked) {

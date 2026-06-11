@@ -112,6 +112,21 @@ function deleteAtMultiCaret(t, direction) {
 	syncMultiTaskText(t);
 }
 
+// Backspace/Delete during multi-select: simulate deletion on every selected
+// line (including the focused one) so native deletion can't split a grapheme
+function deleteAcrossMultiSelection(focusedTask, taskInput, direction) {
+	pushMultiUndo();
+	var focusedOffset = getCaretOffset(taskInput);
+	if (focusedOffset != null) state.multiCaretOffsets[focusedTask.id] = focusedOffset;
+	for (var t of getMultiSelectedTasks()) {
+		deleteAtMultiCaret(t, direction);
+	}
+	// rewriting textContent collapses the (hidden) native caret; restore it
+	setCaretOffset(taskInput, clampCaret(focusedTask.text, state.multiCaretOffsets[focusedTask.id]));
+	renderSimCarets();
+	scheduleSave();
+}
+
 // Up/Down: leave multi-select onto the task just above/below the chunk
 function exitMultiSelect(direction) {
 	var selected = getMultiSelectedTasks();
