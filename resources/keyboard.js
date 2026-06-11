@@ -113,15 +113,21 @@ function handleKeyDown(e, task) {
 	} else if (e.key === 'ArrowRight' && cmd && e.shiftKey && !e.altKey) {
 		e.preventDefault();
 		hasMultiSelect ? shakeAllSelected() : applyShakeAnimation(task.id);
-	// Plain Up/Down: navigate (clears multi-select)
+	// Plain Up/Down: navigate (multi-select exits onto the task beyond the chunk)
 	} else if (e.key === 'ArrowUp' && !e.shiftKey && !e.altKey) {
 		e.preventDefault();
-		if (hasMultiSelect) clearMultiSelect();
-		navigateTasks('up');
+		if (hasMultiSelect) {
+			exitMultiSelect('up');
+		} else {
+			navigateTasks('up');
+		}
 	} else if (e.key === 'ArrowDown' && !e.shiftKey && !e.altKey) {
 		e.preventDefault();
-		if (hasMultiSelect) clearMultiSelect();
-		navigateTasks('down');
+		if (hasMultiSelect) {
+			exitMultiSelect('down');
+		} else {
+			navigateTasks('down');
+		}
 	// Shift+Up/Down: move task
 	} else if (e.key === 'ArrowUp' && e.shiftKey && !e.altKey) {
 		e.preventDefault();
@@ -171,5 +177,34 @@ function handleKeyDown(e, task) {
 			keyHandler.shiftLeft.pressed = true;
 			navigateToParentTask();
 		}
+	// Plain Left/Right during multi-select: every line's caret steps together
+	} else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.shiftKey && !e.altKey && hasMultiSelect) {
+		// the focused line moves natively; selectionchange syncs its offset
+		var focusedContainer = document.activeElement ? document.activeElement.closest('.task-container') : null;
+		var focusedId = focusedContainer ? focusedContainer.dataset.id : null;
+		for (var t of getMultiSelectedTasks()) {
+			if (t.id === focusedId) continue;
+			var range = getMultiRange(t);
+			if (range) {
+				// arrows collapse a selection to its start or end, like native
+				state.multiCaretOffsets[t.id] = e.key === 'ArrowLeft' ? range.start : range.end;
+				delete state.multiSelectRanges[t.id];
+			} else {
+				var off = clampCaret(t.text, state.multiCaretOffsets[t.id]);
+				state.multiCaretOffsets[t.id] = e.key === 'ArrowLeft'
+					? prevGraphemeBoundary(t.text, off)
+					: nextGraphemeBoundary(t.text, off);
+			}
+		}
+		renderSimCarets();
+	// Cmd+A during multi-select: select all text across all selected lines
+	} else if ((e.key === 'a' || e.key === 'A') && cmd && !e.shiftKey && !e.altKey && hasMultiSelect) {
+		e.preventDefault();
+		selectAllMultiSelected(task);
+	// Cmd+Z / Cmd+Shift+Z during multi-select: app-level undo/redo (native
+	// history would only touch the focused line, so it's blocked)
+	} else if ((e.key === 'z' || e.key === 'Z') && cmd && !e.altKey && hasMultiSelect) {
+		e.preventDefault();
+		e.shiftKey ? redoMultiEdit(task) : undoMultiEdit(task);
 	}
 }

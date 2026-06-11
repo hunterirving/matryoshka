@@ -69,11 +69,59 @@ document.addEventListener('DOMContentLoaded', function() {
 	state.appContainer.addEventListener('focusin', function(e) {
 		if (e.target.classList && e.target.classList.contains('task-text')) {
 			document.querySelectorAll('.task-text').forEach(input => {
-				if (input !== e.target) {
-					placeCursorAtBeginning(input);
+				if (input === e.target) return;
+				// multi-selected lines keep their own caret scrolled into view
+				if (state.multiSelectedIds.length > 1) {
+					var container = input.closest('.task-container');
+					if (container && state.multiSelectedIds.includes(container.dataset.id)) return;
 				}
+				placeCursorAtBeginning(input);
 			});
 		}
+	});
+
+	// The native caret is hidden app-wide; mirror the focused line's caret
+	// position and redraw the simulated carets on every selection change
+	document.addEventListener('selectionchange', function() {
+		var el = document.activeElement;
+		if (!el || !el.classList || !el.classList.contains('task-text')) return;
+		if (state.multiSelectedIds.length > 1) {
+			var container = el.closest('.task-container');
+			var id = container ? container.dataset.id : null;
+			var sel = window.getSelection();
+			if (id && state.multiSelectedIds.includes(id) && sel && sel.rangeCount > 0) {
+				var offset = getCaretOffset(el);
+				if (offset != null) {
+					// live-track the focused line's selection so it persists as a
+					// painted range when focus moves to another line; a collapse
+					// (click, arrow) clears it, like native
+					var len = sel.isCollapsed ? 0 : sel.toString().length;
+					if (len > 0) {
+						state.multiSelectRanges[id] = { start: offset - len, end: offset };
+					} else {
+						delete state.multiSelectRanges[id];
+					}
+					state.multiCaretOffsets[id] = offset;
+				}
+			}
+		}
+		renderSimCarets();
+	});
+
+	// hide simulated carets while the window is inactive, like native ones
+	state.windowFocused = document.hasFocus();
+	window.addEventListener('focus', function() {
+		state.windowFocused = true;
+		renderSimCarets();
+	});
+	window.addEventListener('blur', function() {
+		state.windowFocused = false;
+		renderSimCarets();
+	});
+
+	// drop the caret if focus leaves the task texts entirely
+	state.appContainer.addEventListener('focusout', function() {
+		requestAnimationFrame(renderSimCarets);
 	});
 
 	// Initialize

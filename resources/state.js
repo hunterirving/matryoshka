@@ -12,10 +12,15 @@ var state = {
 	isF2Pressed: false,
 	themes: ['gak', 'swamp', 'sunflower', 'harvest', 'sugar', 'vineyard', 'woodstove', 'medieval', 'goblin'],
 	isInWheelEvent: false,
+	windowFocused: true,
 
 	// Multi-select state
 	multiSelectAnchorId: null,
 	multiSelectedIds: [],
+	multiCaretOffsets: {},
+	multiSelectRanges: {},
+	multiUndoStack: [],
+	multiRedoStack: [],
 };
 
 function generateId() {

@@ -123,10 +123,12 @@
 	.custom-checkbox:checked + .checkbox-label::before {
 		display: none;
 	}
-	.task-text {
+	.task-text,
+	.pseudo-selection {
 		text-shadow: 1px 1px 1px var(--cola);
 	}
-	.task-text::selection {
+	.task-text::selection,
+	.pseudo-selection {
 		color: var(--text);
 	}
 }
@@ -140,9 +142,12 @@
 	.task-text {
 		font-family: BasteleurMoonlight;
 	}
-	.task-text::selection {
+	.task-text::selection,
+	.pseudo-selection {
 		background-color: var(--background);
 		color: var(--text);
+	}
+	.task-text::selection {
 		text-shadow: none;
 	}
 	.active {
@@ -207,6 +212,9 @@
 		color: var(--mothball);
 		text-shadow: 1px 1px 1px var(--bakelite);
 	}
+	.active .pseudo-selection {
+		text-shadow: 1px 1px 1px var(--bakelite);
+	}
 	.parent-task {
 		--text: var(--mothball)
 	}
@@ -238,7 +246,8 @@
 	.active .custom-checkbox:indeterminate + .checkbox-label::before {
 		background-color: var(--mothball);
 	}
-	.task-text::selection {
+	.task-text::selection,
+	.pseudo-selection {
 		background-color: var(--lipstick);
 		color: var(--mothball);
 	}
@@ -297,7 +306,7 @@ ul {
 	color: var(--text);
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
+	white-space: pre; /* preserve spaces; stops contenteditable nbsp substitution */
 	cursor: text;
 	line-height: normal;
 	min-height: 1.17em;
@@ -308,7 +317,8 @@ ul {
 .active .task-text {
 	text-overflow: clip;
 }
-.task-text::selection {
+.task-text::selection,
+.pseudo-selection {
 	background-color: var(--accent);
 	color: var(--background);
 }
@@ -320,6 +330,31 @@ ul {
 	padding-right: 11px;
 	padding-top: 4px;
 	padding-bottom: 4px;
+	position: relative;
+}
+/* the native caret is hidden app-wide; simulated carets render identically
+   across OSes and between single- and multi-select editing */
+.task-text {
+	caret-color: transparent;
+}
+.sim-caret {
+	position: absolute;
+	width: 1px;
+	pointer-events: none;
+	animation: caret-blink 1s step-end infinite;
+}
+/* non-focused lines' selections: a clipped text duplicate in ::selection
+   colors, built and positioned by updateMultiRangeStyles */
+.pseudo-selection {
+	position: absolute;
+	overflow: hidden;
+	pointer-events: none;
+	white-space: pre;
+	line-height: normal;
+}
+@keyframes caret-blink {
+	0%, 49% { opacity: 1; }
+	50%, 100% { opacity: 0; }
 }
 .active {
 	background-color: var(--highlight);

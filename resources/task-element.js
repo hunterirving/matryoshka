@@ -1,5 +1,36 @@
 // Task element: DOM creation and per-element event handlers
 
+// grapheme-aware caret stepping so surrogate pairs / ZWJ emoji never split
+function prevGraphemeBoundary(text, offset) {
+	if (offset <= 0) return 0;
+	if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+		var prev = 0;
+		for (var seg of new Intl.Segmenter().segment(text)) {
+			if (seg.index >= offset) break;
+			prev = seg.index;
+		}
+		return prev;
+	}
+	// fallback: step one code point
+	var cut = offset - 1;
+	if (cut > 0 && text.charCodeAt(cut) >= 0xDC00 && text.charCodeAt(cut) <= 0xDFFF) cut--;
+	return cut;
+}
+
+function nextGraphemeBoundary(text, offset) {
+	if (offset >= text.length) return text.length;
+	if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+		for (var seg of new Intl.Segmenter().segment(text)) {
+			var end = seg.index + seg.segment.length;
+			if (end > offset) return end;
+		}
+		return text.length;
+	}
+	var next = offset + 1;
+	if (next < text.length && text.charCodeAt(offset) >= 0xD800 && text.charCodeAt(offset) <= 0xDBFF) next++;
+	return next;
+}
+
 function createTaskElement(task, isParentTask = false) {
 	var taskContainer = document.createElement('div');
 	taskContainer.className = 'task-container';
@@ -71,15 +102,18 @@ function createTaskElement(task, isParentTask = false) {
 					}
 					return;
 				}
-				// Some tasks still have text: remove last char from all that have text
+				// Some tasks still have text: delete each line's selection,
+				// or the grapheme before its caret
 				e.preventDefault();
+				pushMultiUndo();
+				var focusedOffset = getCaretOffset(taskInput);
+				if (focusedOffset != null) state.multiCaretOffsets[task.id] = focusedOffset;
 				for (var t of selected) {
-					if (t.text.length > 0) {
-						t.text = t.text.slice(0, -1);
-						var inp = document.querySelector(`.task-container[data-id="${t.id}"] .task-text`);
-						if (inp) inp.textContent = t.text;
-					}
+					deleteAtMultiCaret(t, 'backward');
 				}
+				// rewriting textContent collapses the (hidden) native caret; restore it
+				setCaretOffset(taskInput, clampCaret(task.text, state.multiCaretOffsets[task.id]));
+				renderSimCarets();
 				keyHandler.backspace.canDelete = false;
 				scheduleSave();
 				return;
@@ -116,10 +150,15 @@ function createTaskElement(task, isParentTask = false) {
 				e.preventDefault();
 				return;
 			}
-			if (isLastSubtask(task) && state.lastSubtaskDownArrowReleased && task !== state.currentTask) {
+			// during multi-select, "at the bottom" means the chunk's bottom line
+			var bottomTask = state.multiSelectedIds.length > 1
+				? getMultiSelectedTasks().slice(-1)[0] || task
+				: task;
+			if (isLastSubtask(bottomTask) && state.lastSubtaskDownArrowReleased && bottomTask !== state.currentTask) {
 				e.preventDefault();
 				keyHandler.arrowDown.blocked = true;
-				addNewSubtask(state.currentTask, task);
+				clearMultiSelect();
+				addNewSubtask(state.currentTask, bottomTask);
 				state.lastSubtaskDownArrowReleased = false;
 			} else {
 				handleKeyDown(e, task);
@@ -204,43 +243,56 @@ function createTaskElement(task, isParentTask = false) {
 	taskInput.addEventListener('keydown', handleCopyAndCut);
 	taskInput.addEventListener('input', (e) => {
 		var oldText = task.text;
-		// Keep text single-line: strip any newlines a paste/IME may introduce
-		if (taskInput.textContent.indexOf('\n') !== -1) {
+		// Normalize: strip newlines a paste/IME may introduce, and convert
+		// contenteditable's nbsp space substitutions back to plain spaces
+		var normalized = taskInput.textContent.replace(/\n/g, '').replace(/\u00A0/g, ' ');
+		if (normalized !== taskInput.textContent) {
 			var caret = getCaretOffset(taskInput);
-			taskInput.textContent = taskInput.textContent.replace(/\n/g, '');
+			taskInput.textContent = normalized;
 			if (caret != null) setCaretOffset(taskInput, caret);
 		}
 		task.text = taskInput.textContent;
 		// Propagate edits to all other multi-selected tasks
 		if (state.multiSelectedIds.length > 1 && state.multiSelectedIds.includes(task.id)) {
+			// snapshot before mirroring; the focused line already changed, so
+			// its pre-edit text comes from oldText
+			pushMultiUndo(task.id, oldText);
+			var focusedOffset = getCaretOffset(taskInput);
+			if (focusedOffset != null) state.multiCaretOffsets[task.id] = focusedOffset;
 			var otherSelected = getMultiSelectedTasks().filter(t => t.id !== task.id);
 
 			if (e.inputType === 'insertText' && e.data) {
+				var data = e.data.replace(/\u00A0/g, ' ');
 				for (var t of otherSelected) {
-					t.text = t.text + e.data;
-					var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] .task-text`);
-					if (otherInput) otherInput.textContent = t.text;
+					insertAtMultiCaret(t, data);
 				}
-			} else if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
+			} else if (e.inputType === 'deleteContentBackward') {
 				for (var t of otherSelected) {
-					if (t.text.length > 0) {
-						t.text = t.text.slice(0, -1);
-					}
-					var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] .task-text`);
-					if (otherInput) otherInput.textContent = t.text;
+					deleteAtMultiCaret(t, 'backward');
+				}
+			} else if (e.inputType === 'deleteContentForward') {
+				for (var t of otherSelected) {
+					deleteAtMultiCaret(t, 'forward');
 				}
 			} else if (e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop') {
-				var addedLen = taskInput.textContent.length - oldText.length;
+				// the paste may have replaced the focused line's selection, so
+				// account for the replaced range when sizing the pasted text
+				var preRange = state.multiSelectRanges[task.id];
+				var replacedLen = preRange
+					? Math.min(preRange.end, oldText.length) - Math.min(preRange.start, oldText.length)
+					: 0;
+				var addedLen = taskInput.textContent.length - oldText.length + Math.max(0, replacedLen);
 				if (addedLen > 0) {
 					var caretPos = getCaretOffset(taskInput);
 					var pastedText = taskInput.textContent.slice(caretPos - addedLen, caretPos);
 					for (var t of otherSelected) {
-						t.text = t.text + pastedText;
-						var otherInput = document.querySelector(`.task-container[data-id="${t.id}"] .task-text`);
-						if (otherInput) otherInput.textContent = t.text;
+						insertAtMultiCaret(t, pastedText);
 					}
 				}
 			}
+			// the edit consumed the focused line's selection
+			delete state.multiSelectRanges[task.id];
+			renderSimCarets();
 		}
 		if (task === state.currentTask) {
 			updatePageTitle(task);
