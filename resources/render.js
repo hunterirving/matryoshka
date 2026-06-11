@@ -105,15 +105,22 @@ function applyShakeAnimation(taskId, direction = 'horizontal') {
 		var className = direction === 'vertical' ? 'shake-vertical' : 'shake';
 		if (checkbox.dataset.shaking) return;
 		checkbox.dataset.shaking = '1';
+		// restart cleanly if a prior shake is still mid-animation
+		checkbox.classList.remove('shake', 'shake-vertical');
+		void checkbox.offsetWidth;
 		checkbox.classList.add(className);
 		checkbox.addEventListener('animationend', () => {
 			checkbox.classList.remove(className);
 		}, { once: true });
-		var clearShaking = () => {
+		// also clear on the next fresh keydown
+		var clearShaking = (ev) => {
+			if (ev.type === 'keydown' && ev.repeat) return;
 			delete checkbox.dataset.shaking;
 			document.removeEventListener('keyup', clearShaking);
+			document.removeEventListener('keydown', clearShaking, true);
 		};
 		document.addEventListener('keyup', clearShaking);
+		document.addEventListener('keydown', clearShaking, true);
 	}
 }
 
