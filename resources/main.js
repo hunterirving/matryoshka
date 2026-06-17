@@ -132,6 +132,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	// re-pin the active caret's scroll once layout settles and once fonts load
 	requestAnimationFrame(rescrollActiveCaret);
 	if (document.fonts && document.fonts.ready) {
-		document.fonts.ready.then(rescrollActiveCaret);
+		document.fonts.ready.then(() => {
+			// custom fonts can change row height, so re-snap the grid and scroll
+			alignRowHeights();
+			recenterActiveTask();
+			rescrollActiveCaret();
+		});
 	}
 });

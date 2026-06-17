@@ -115,10 +115,10 @@
 	--icon: '🍬';
 
 	.checkbox-label {
-		border-radius: 10px;
+		border-radius: 12px;
 	}
 	.active {
-		border-radius: 30px 0px 0px 30px;
+		border-radius: 36px 0px 0px 36px;
 	}
 	.custom-checkbox:checked + .checkbox-label::before {
 		display: none;
@@ -151,7 +151,7 @@
 		text-shadow: none;
 	}
 	.active {
-		border-radius: 30px 0px 0px 30px;
+		border-radius: 36px 0px 0px 36px;
 	}
 	.active .task-text {
 		color: var(--bloom);
@@ -256,10 +256,10 @@
 /* interface styling */
 @keyframes shake {
 	0% { transform: translateX(0); }
-	20% { transform: translateX(3px); }
-	40% { transform: translateX(-3px); }
-	60% { transform: translateX(3px); }
-	80% { transform: translateX(-3px); }
+	20% { transform: translateX(3.6px); }
+	40% { transform: translateX(-3.6px); }
+	60% { transform: translateX(3.6px); }
+	80% { transform: translateX(-3.6px); }
 	100% { transform: translateX(0); }
 }
 .shake {
@@ -267,42 +267,41 @@
 }
 @keyframes shake-vertical {
 	0% { transform: translateY(0); }
-	20% { transform: translateY(3px); }
-	40% { transform: translateY(-3px); }
-	60% { transform: translateY(3px); }
-	80% { transform: translateY(-3px); }
+	20% { transform: translateY(3.6px); }
+	40% { transform: translateY(-3.6px); }
+	60% { transform: translateY(3.6px); }
+	80% { transform: translateY(-3.6px); }
 	100% { transform: translateY(0); }
 }
 .shake-vertical {
 	animation: shake-vertical 0.25s ease-out;
 }
 html {
-	scroll-behavior: smooth;
 	overflow-y: scroll;
 	overflow-x: hidden;
 	scrollbar-width: auto;
 	scrollbar-color: color-mix(in srgb, var(--text) 75%, transparent) color-mix(in srgb, var(--background) 75%, transparent);
 }
 body {
-	zoom: 1.2;
+	font-size: 19.2px;
 	font-family: Arial, sans-serif;
-	max-width: 800px;
+	max-width: 960px;
 	margin: 0 auto;
-	padding: 0px 20px 20px 20px;
+	padding: 0px 24px 24px 24px;
 	background-color: var(--background);
 	color: var(--text);
 }
 ul {
 	list-style-type: none;
-	padding-left: 20px;
+	padding-left: 24px;
 }
 .task-text {
 	font-size: 1.17em;
 	font-weight: bold;
 	flex: 1;
 	min-width: 0;
-	margin-left: 10px;
-	padding: 5px 5px 5px 0;
+	margin-left: 12px;
+	padding: 6px 6px 6px 0;
 	color: var(--text);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -325,12 +324,16 @@ ul {
 .task-container {
 	display: flex;
 	align-items: center;
-	margin: 5px 0;
-	padding-left: 11px;
-	padding-right: 11px;
-	padding-top: 4px;
-	padding-bottom: 4px;
+	margin: 6px 0;
+	box-sizing: border-box;
+	padding-left: 13.2px;
+	padding-right: 13.2px;
+	padding-top: 4.8px;
+	padding-bottom: 4.8px;
 	position: relative;
+}
+#subtasks-container .task-container {
+	height: var(--row-h, auto);
 }
 /* the native caret is hidden app-wide; simulated carets render identically
    across OSes and between single- and multi-select editing */
@@ -364,15 +367,26 @@ ul {
 	top: 0;
 	background-color: var(--background);
 	z-index: 1;
-	padding-top: 20px;
+	padding-top: 24px;
+}
+/* opaque strip covering the fixed margin gap below the header so subtasks
+   scrolling under it stay hidden */
+.sticky-header::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 100%;
+	height: 16px;
+	background-color: var(--background);
 }
 .parent-task {
 	font-size: 1.5em;
 	font-weight: bold;
 }
 #breadcrumbs {
-	font-size: 24px;
-	margin-bottom: 10px;
+	font-size: 28.8px;
+	margin-bottom: 12px;
 	color: var(--text);
 	user-select: none;
 }
@@ -381,14 +395,14 @@ ul {
 }
 .checkbox-label {
 	display: inline-block;
-	width: 20px;
-	height: 20px;
+	width: 24px;
+	height: 24px;
 	background-color: var(--background);
-	border: 2px solid var(--accent);
+	border: 2.4px solid var(--accent);
 	position: relative;
 	cursor: pointer;
 	box-sizing: border-box;
-	border-radius: 4px;
+	border-radius: 4.8px;
 }
 .custom-checkbox:checked + .checkbox-label {
 	background-color: var(--accent);
@@ -396,12 +410,12 @@ ul {
 .custom-checkbox:checked + .checkbox-label::before {
 	content: '';
 	position: absolute;
-	left: 6px;
-	top: 2px;
-	width: 5px;
-	height: 10px;
+	left: 7.2px;
+	top: 2.4px;
+	width: 6px;
+	height: 12px;
 	border: solid var(--background);
-	border-width: 0 2px 2px 0;
+	border-width: 0 2.4px 2.4px 0;
 	transform: rotate(45deg);
 	box-sizing: border-box;
 }
@@ -411,7 +425,7 @@ ul {
 	left: 25%;
 	right: 25%;
 	top: 50%;
-	height: 2px;
+	height: 2.4px;
 	background-color: var(--accent);
 	transform: translateY(-50%);
 }

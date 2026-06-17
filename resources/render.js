@@ -216,7 +216,7 @@ function positionSimCaret(container, offset, hidden) {
 	}
 	var containerRect = container.getBoundingClientRect();
 	var textRect = textEl.getBoundingClientRect();
-	// client rects include the body zoom but style px get re-zoomed, so unscale
+	// rounding factor between client rects and style px (1 unless the box is scaled)
 	var scale = container.offsetWidth ? containerRect.width / container.offsetWidth : 1;
 	var x = textRect.left;
 	var top = textRect.top;
@@ -243,8 +243,8 @@ function positionSimCaret(container, offset, hidden) {
 	}
 	// keep the caret inside the line's visible text box
 	x = Math.max(textRect.left, Math.min(x, textRect.right - 1));
-	// snap to whole zoomed pixels and size to exactly one, so the caret
-	// never straddles a pixel boundary and fattens to 2px
+	// snap to whole pixels and size to exactly one, so the caret never
+	// straddles a pixel boundary and fattens to 2px
 	caretEl.style.left = (Math.round(x - containerRect.left) / scale) + 'px';
 	caretEl.style.top = ((top - containerRect.top) / scale) + 'px';
 	caretEl.style.height = (height / scale) + 'px';
@@ -294,19 +294,90 @@ function setActiveTask(input, task) {
 	state.lastSubtaskShiftDownReleased = isLastSubtask(bottomTask);
 	input.focus();
 
-	// Center the active task in the viewport
-	var activeTaskElement = input.closest('.task-container');
-	if (activeTaskElement && activeTaskElement.parentElement && activeTaskElement.parentElement.tagName === 'LI') {
-		activeTaskElement.scrollIntoView({
-			behavior: 'auto',
-			block: 'center',
-			inline: 'nearest'
-		});
+	centerActiveTask(input.closest('.task-container'));
+}
 
-		setTimeout(() => {
-			document.documentElement.style.scrollBehavior = 'smooth';
-		}, 200);
+// Vertical distance between consecutive subtask rows (one grid slot).
+function getRowStride() {
+	var rows = document.querySelectorAll('#subtasks-container li');
+	if (!rows.length) return 0;
+	return rows.length >= 2
+		? rows[1].getBoundingClientRect().top - rows[0].getBoundingClientRect().top
+		: rows[0].getBoundingClientRect().height;
+}
+
+// Scroll by whole row strides so the active subtask stays on a fixed slot grid
+// (no drift, no smooth animation): centered when possible, free at the top and
+// bottom where the scroll clamps. The parent task lives in the sticky header, so
+// selecting it returns to the top.
+function centerActiveTask(activeEl) {
+	if (!activeEl) return;
+	var inList = activeEl.parentElement && activeEl.parentElement.tagName === 'LI';
+	if (!inList) {
+		window.scrollTo(0, 0);
+		return;
 	}
+	var stride = getRowStride();
+	if (stride <= 0) return;
+	// pad the bottom so max scroll is a whole stride, else it sits off-grid
+	// (shifting every slot) or is unreachable
+	updateBottomSpacer(stride);
+	var rect = activeEl.getBoundingClientRect();
+	var center = rect.top + rect.height / 2 + window.scrollY - window.innerHeight / 2;
+	var snapped = Math.round(center / stride) * stride;
+	var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+	var target = Math.max(0, Math.min(snapped, maxScroll));
+	// snap to a device pixel so the browser doesn't re-round the scroll by a
+	// varying amount each step, which makes rows wiggle
+	var dpr = window.devicePixelRatio || 1;
+	window.scrollTo(0, Math.round(target * dpr) / dpr);
+}
+
+// Re-snap the scroll to the current row grid (e.g. after a theme change resizes
+// the rows), so slots stay aligned without waiting for the next navigation.
+function recenterActiveTask() {
+	var el = document.querySelector('.task-container.active .task-text');
+	var focused = document.activeElement;
+	if (focused && focused.classList && focused.classList.contains('task-text')) el = focused;
+	if (el) centerActiveTask(el.closest('.task-container'));
+}
+
+// Nudge each subtask row's height up to the next whole device pixel (at most a
+// ~1px bump) so the row stride lands on the device grid and rows don't jitter as
+// we scroll; the rows' 6px margins are already whole pixels.
+function alignRowHeights() {
+	var container = document.getElementById('subtasks-container');
+	if (!container) return;
+	var row = container.querySelector('.task-container');
+	if (!row) return;
+	container.style.removeProperty('--row-h');
+	var height = row.getBoundingClientRect().height;
+	if (!height) return;
+	var dpr = window.devicePixelRatio || 1;
+	container.style.setProperty('--row-h', Math.ceil(height * dpr) / dpr + 'px');
+}
+
+// Grow a trailing spacer so the document's max scroll is a whole number of row
+// strides (keeps the bottom on the slot grid and reachable) plus a little empty
+// space below the last row.
+function updateBottomSpacer(stride) {
+	var container = document.getElementById('subtasks-container');
+	if (!container) return;
+	var spacer = document.getElementById('bottom-spacer');
+	if (!spacer) {
+		spacer = document.createElement('div');
+		spacer.id = 'bottom-spacer';
+		container.appendChild(spacer);
+	}
+	var baseScrollHeight = document.documentElement.scrollHeight - spacer.getBoundingClientRect().height;
+	var baseMaxScroll = baseScrollHeight - window.innerHeight;
+	if (baseMaxScroll <= 0) {
+		spacer.style.height = '0px';
+		return;
+	}
+	var gap = 16; // breathing room below the last row
+	var target = Math.ceil((baseMaxScroll + gap) / stride) * stride;
+	spacer.style.height = (target - baseMaxScroll) + 'px';
 }
 
 function updateBreadcrumbs(selectedTask) {
@@ -395,6 +466,7 @@ function renderCurrentView() {
 	});
 	subtasksContainer.appendChild(subtasksList);
 	state.appContainer.appendChild(subtasksContainer);
+	alignRowHeights();
 
 	updateBreadcrumbs(state.currentTask);
 	updatePageTitle(state.currentTask);

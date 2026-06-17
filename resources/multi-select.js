@@ -365,10 +365,6 @@ function pushMultiSelectedIntoTarget(direction, navigate = false) {
 
 	var refocusId = getFocusedSelectedId();
 
-	if (navigate) {
-		document.documentElement.style.scrollBehavior = 'auto';
-	}
-
 	var subtasks = state.currentTask.subtasks;
 	var indices = selected.map(t => subtasks.findIndex(s => s.id === t.id)).sort((a, b) => a - b);
 	var topIndex = indices[0];
@@ -418,10 +414,6 @@ function pullMultiSelectedOutLayer(navigate = false) {
 	if (selected.length === 0) return false;
 
 	var refocusId = getFocusedSelectedId();
-
-	if (navigate) {
-		document.documentElement.style.scrollBehavior = 'auto';
-	}
 
 	var currentParent = state.currentTask;
 	var grandParent = state.taskPath[state.taskPath.length - 2];

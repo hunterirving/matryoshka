@@ -24,9 +24,15 @@ function setTheme(theme) {
 	var backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--background').trim();
 	document.getElementById('themeColor').setAttribute('content', backgroundColor);
 	updateFavicon();
+	alignRowHeights();
+	recenterActiveTask();
 	rescrollActiveCaret();
 	if (document.fonts && document.fonts.ready) {
-		document.fonts.ready.then(rescrollActiveCaret);
+		document.fonts.ready.then(() => {
+			alignRowHeights();
+			recenterActiveTask();
+			rescrollActiveCaret();
+		});
 	}
 }
 

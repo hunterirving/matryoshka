@@ -28,10 +28,6 @@ function moveSubtask(subtask, direction) {
 function pushSubtaskIntoTarget(subtask, direction, navigate = false) {
 	if (subtask === state.currentTask) return false;
 
-	if (navigate) {
-		document.documentElement.style.scrollBehavior = 'auto';
-	}
-
 	var parentTask = findParentTask(subtask);
 	if (!parentTask) return false;
 
@@ -69,10 +65,6 @@ function pushSubtaskIntoTarget(subtask, direction, navigate = false) {
 function pullSubtaskOutLayer(subtask, navigate = false) {
 	if (subtask === state.currentTask) return false;
 	if (state.taskPath.length <= 1) return false;
-
-	if (navigate) {
-		document.documentElement.style.scrollBehavior = 'auto';
-	}
 
 	var currentParent = findParentTask(subtask);
 	if (!currentParent) return;

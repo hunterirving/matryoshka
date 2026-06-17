@@ -30,8 +30,6 @@ function navigateTasks(direction) {
 }
 
 function navigateIntoSubtask(subtask) {
-	document.documentElement.style.scrollBehavior = 'auto';
-
 	if (subtask.subtasks.length > 0) {
 		state.currentTask.selectedSubtaskId = subtask.id;
 		state.taskPath.push(subtask);
@@ -54,8 +52,6 @@ function navigateIntoSubtask(subtask) {
 }
 
 function navigateIntoTaskAndSelectSubtask(targetTask, subtaskToSelect) {
-	document.documentElement.style.scrollBehavior = 'auto';
-
 	state.currentTask.selectedSubtaskId = targetTask.id;
 
 	state.taskPath.push(targetTask);
@@ -75,8 +71,6 @@ function navigateToParentTask() {
 			applyShakeAnimation(taskId);
 		}
 	} else if (state.taskPath.length > 1) {
-		document.documentElement.style.scrollBehavior = 'auto';
-
 		var currentTaskId = state.currentTask.id;
 		state.taskPath.pop();
 		state.currentTask = state.taskPath[state.taskPath.length - 1];
@@ -99,8 +93,6 @@ function navigateToParentTaskAndSelectTask(targetTask) {
 		renderCurrentView();
 		selectAndFocusTask(targetTask);
 	} else if (state.taskPath.length > 1) {
-		document.documentElement.style.scrollBehavior = 'auto';
-
 		state.taskPath.pop();
 		state.currentTask = state.taskPath[state.taskPath.length - 1];
 		updateBreadcrumbs(state.currentTask);
