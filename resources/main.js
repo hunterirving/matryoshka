@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (event.key === 'F2' && !state.isF2Pressed) {
 			event.preventDefault();
 			state.isF2Pressed = true;
-			cycleTheme();
+			cycleTheme(event.shiftKey ? -1 : 1);
 		}
 	});
 

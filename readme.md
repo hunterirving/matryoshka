@@ -47,7 +47,7 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `⬆️/⬇️` (without modifier) clear the selection and resume single-task navigation
 
 ### theming
-- press `F2` to cycle through available themes
+- press `F2` to cycle through available themes (`Shift + F2` to cycle in reverse)
 
 ## data persistence
 your task tree is automatically saved to your browser's local storage after each edit. this ensures your tasks will persist even if you close the browser or refresh the page.

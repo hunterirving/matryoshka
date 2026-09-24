@@ -1,7 +1,7 @@
 // Theme: theme selection, cycling, and persistence
 
-function cycleTheme() {
-	state.currentThemeIndex = (state.currentThemeIndex + 1) % state.themes.length;
+function cycleTheme(step) {
+	state.currentThemeIndex = (state.currentThemeIndex + step + state.themes.length) % state.themes.length;
 	var newTheme = state.themes[state.currentThemeIndex];
 	setTheme(newTheme);
 	saveThemeToLocalStorage(newTheme);
