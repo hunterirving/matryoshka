@@ -128,6 +128,68 @@ function addNewSubtask(parentTask, currentSubtask = null) {
 	scheduleSave();
 }
 
+function isEmptyTask(task) {
+	return task.text === '' && task.subtasks.length === 0;
+}
+
+function cloneTaskWithNewIds(task) {
+	var subtasks = task.subtasks.map(cloneTaskWithNewIds);
+	var selectedIndex = task.subtasks.findIndex(t => t.id === task.selectedSubtaskId);
+	return {
+		id: generateId(),
+		text: task.text,
+		state: task.state,
+		subtasks: subtasks,
+		selectedSubtaskId: selectedIndex === -1 ? null : subtasks[selectedIndex].id
+	};
+}
+
+function pasteCopiedTasks(targetTasks) {
+	if (state.copiedTasks.length === 0) return;
+
+	var pastedTasks = state.copiedTasks.map(cloneTaskWithNewIds);
+	var parentTask = state.currentTask;
+	if (targetTasks[0] === parentTask) {
+		parentTask.subtasks.unshift(...pastedTasks);
+	} else {
+		var firstIndex = parentTask.subtasks.findIndex(t => t.id === targetTasks[0].id);
+		var lastIndex = parentTask.subtasks.findIndex(t => t.id === targetTasks[targetTasks.length - 1].id);
+		var isEmptySlot = targetTasks.every(isEmptyTask) && !state.copiedTasks.every(isEmptyTask);
+		if (isEmptySlot) {
+			parentTask.subtasks.splice(firstIndex, targetTasks.length, ...pastedTasks);
+		} else {
+			parentTask.subtasks.splice(lastIndex + 1, 0, ...pastedTasks);
+		}
+	}
+	pastedTasks.forEach(t => adjustMovedTaskState(t, parentTask));
+	updateTaskAndAncestors(parentTask);
+
+	clearMultiSelect();
+	var lastPasted = pastedTasks[pastedTasks.length - 1];
+	if (pastedTasks.length > 1) {
+		state.multiSelectAnchorId = pastedTasks[0].id;
+		state.multiSelectedIds = pastedTasks.map(t => t.id);
+		pastedTasks.forEach(t => state.multiCaretOffsets[t.id] = t.text.length);
+	}
+	parentTask.selectedSubtaskId = lastPasted.id;
+	renderCurrentView();
+	pastedTasks.forEach(t => applyShakeAnimation(t.id, 'vertical'));
+	scheduleSave();
+}
+
+function deleteTask(task) {
+	if (task === state.taskPath[0]) {
+		applyShakeAnimation(task.id);
+		return;
+	}
+	clearMultiSelect();
+	if (task === state.currentTask) {
+		deleteCurrentParentTask();
+	} else {
+		deleteSubtask(task);
+	}
+}
+
 function deleteSubtask(subtask) {
 	var parentTask = state.taskPath[state.taskPath.length - 1];
 	var index = parentTask.subtasks.findIndex(t => t.id === subtask.id);
@@ -184,4 +246,5 @@ function deleteCurrentParentTask() {
 			selectAndFocusTask(grandparentTask);
 		}
 	}
+	scheduleSave();
 }

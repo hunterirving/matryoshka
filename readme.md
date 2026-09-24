@@ -32,6 +32,9 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `⬇️` (on last subtask) add a new task at the bottom of the list
 - `Backspace` (when task text is empty) delete selected task(s) and their subtasks
 - `Shift + Enter` toggle selected task(s) completion status
+- `⌘ + C` copy selected task(s) and their subtasks
+- `⌘ + X` cut selected task(s) and their subtasks
+- `⌘ + V` paste copied task(s) and their subtasks
 
 ### reorganization
 - `Shift + ⬆️/⬇️` reposition selected task(s) within their current level
@@ -42,11 +45,6 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 ### multi-select
 - `Option + ⬆️/⬇️` extend or contract the selection to include adjacent tasks
 - `⬆️/⬇️` (without modifier) clear the selection and resume single-task navigation
-
-### text editing
-- `⌘ + C` copy task text (or highlighted substring)
-- `⌘ + X` cut task text (or highlighted substring)
-- `⌘ + V` paste text from the clipboard
 
 ### theming
 - press `F2` to cycle through available themes

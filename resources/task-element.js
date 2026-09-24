@@ -97,28 +97,7 @@ function createTaskElement(task, isParentTask = false) {
 					e.preventDefault();
 					if (keyHandler.backspace.canDelete) {
 						keyHandler.backspace.blocked = true;
-						var toDelete = selected.filter(t => t !== state.taskPath[0] && t !== state.currentTask);
-						if (toDelete.length > 0 && !(state.currentTask.id === 'root' && toDelete.length >= state.currentTask.subtasks.length)) {
-							var firstDeleteIdx = Math.min(...toDelete.map(t => state.currentTask.subtasks.findIndex(s => s.id === t.id)).filter(i => i !== -1));
-							for (var t of toDelete) {
-								var idx = state.currentTask.subtasks.findIndex(s => s.id === t.id);
-								if (idx !== -1) state.currentTask.subtasks.splice(idx, 1);
-							}
-							clearMultiSelect();
-							updateTaskAndAncestors(state.currentTask);
-							if (state.currentTask.subtasks.length === 0 && state.taskPath.length > 1) {
-								navigateToParentTask();
-							} else {
-								renderCurrentView();
-								var targetIndex = Math.max(0, firstDeleteIdx - 1);
-								selectAndFocusTask(state.currentTask.subtasks[targetIndex]);
-							}
-							scheduleSave();
-						} else {
-							for (var t of selected) {
-								applyShakeAnimation(t.id);
-							}
-						}
+						deleteMultiSelected();
 					}
 					return;
 				}
@@ -131,17 +110,8 @@ function createTaskElement(task, isParentTask = false) {
 			}
 			if (taskInput.textContent === '' && keyHandler.backspace.canDelete && state.multiSelectedIds.length <= 1) {
 				e.preventDefault();
-				if (task !== state.taskPath[0]) {
-					keyHandler.backspace.blocked = true;
-					clearMultiSelect();
-					if (task === state.currentTask) {
-						deleteCurrentParentTask();
-					} else {
-						deleteSubtask(task);
-					}
-				} else {
-					applyShakeAnimation(task.id);
-				}
+				if (task !== state.taskPath[0]) keyHandler.backspace.blocked = true;
+				deleteTask(task);
 			} else if (taskInput.textContent !== '') {
 				keyHandler.backspace.canDelete = false;
 				if (deleteWholeGrapheme(taskInput, 'backward')) e.preventDefault();
@@ -261,7 +231,8 @@ function createTaskElement(task, isParentTask = false) {
 
 	taskInput.addEventListener('keydown', keydownHandler);
 	taskInput.addEventListener('keyup', keyupHandler);
-	taskInput.addEventListener('keydown', handleCopyAndCut);
+	taskInput.addEventListener('keydown', handleCopyCutPaste);
+	taskInput.addEventListener('paste', (e) => e.preventDefault());
 	taskInput.addEventListener('input', (e) => {
 		var oldText = task.text;
 		// Normalize: strip newlines a paste/IME may introduce, and convert
@@ -295,9 +266,7 @@ function createTaskElement(task, isParentTask = false) {
 				for (var t of otherSelected) {
 					deleteAtMultiCaret(t, 'forward');
 				}
-			} else if (e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop') {
-				// the paste may have replaced the focused line's selection, so
-				// account for the replaced range when sizing the pasted text
+			} else if (e.inputType === 'insertFromDrop') {
 				var preRange = state.multiSelectRanges[task.id];
 				var replacedLen = preRange
 					? Math.min(preRange.end, oldText.length) - Math.min(preRange.start, oldText.length)
@@ -305,9 +274,9 @@ function createTaskElement(task, isParentTask = false) {
 				var addedLen = taskInput.textContent.length - oldText.length + Math.max(0, replacedLen);
 				if (addedLen > 0) {
 					var caretPos = getCaretOffset(taskInput);
-					var pastedText = taskInput.textContent.slice(caretPos - addedLen, caretPos);
+					var droppedText = taskInput.textContent.slice(caretPos - addedLen, caretPos);
 					for (var t of otherSelected) {
-						insertAtMultiCaret(t, pastedText);
+						insertAtMultiCaret(t, droppedText);
 					}
 				}
 			}

@@ -270,6 +270,32 @@ function updateMultiRangeStyles() {
 }
 
 
+function deleteMultiSelected() {
+	var selected = getMultiSelectedTasks();
+	var toDelete = selected.filter(t => t !== state.taskPath[0] && t !== state.currentTask);
+	if (toDelete.length > 0 && !(state.currentTask.id === 'root' && toDelete.length >= state.currentTask.subtasks.length)) {
+		var firstDeleteIdx = Math.min(...toDelete.map(t => state.currentTask.subtasks.findIndex(s => s.id === t.id)).filter(i => i !== -1));
+		for (var t of toDelete) {
+			var idx = state.currentTask.subtasks.findIndex(s => s.id === t.id);
+			if (idx !== -1) state.currentTask.subtasks.splice(idx, 1);
+		}
+		clearMultiSelect();
+		updateTaskAndAncestors(state.currentTask);
+		if (state.currentTask.subtasks.length === 0 && state.taskPath.length > 1) {
+			navigateToParentTask();
+		} else {
+			renderCurrentView();
+			var targetIndex = Math.max(0, firstDeleteIdx - 1);
+			selectAndFocusTask(state.currentTask.subtasks[targetIndex]);
+		}
+		scheduleSave();
+	} else {
+		for (var t of selected) {
+			applyShakeAnimation(t.id);
+		}
+	}
+}
+
 function shakeAllSelected(direction = 'horizontal') {
 	for (var id of state.multiSelectedIds) {
 		applyShakeAnimation(id, direction);

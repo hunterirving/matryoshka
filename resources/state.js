@@ -12,6 +12,7 @@ var state = {
 	isF2Pressed: false,
 	themes: ['gak', 'swamp', 'sunflower', 'harvest', 'sugar', 'vineyard', 'woodstove', 'medieval', 'goblin'],
 	windowFocused: true,
+	copiedTasks: [],
 
 	// Multi-select state
 	multiSelectAnchorId: null,

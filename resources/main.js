@@ -15,6 +15,7 @@ document.addEventListener('click', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
 	state.appContainer = document.getElementById('app-container');
 	state.rootTask = loadTasksFromLocalStorage();
+	state.copiedTasks = loadCopiedTasksFromSessionStorage();
 	state.currentTask = state.rootTask;
 	state.taskPath = [state.currentTask];
 

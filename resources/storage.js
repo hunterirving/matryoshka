@@ -58,6 +58,15 @@ function deserializeTaskTree(serialized) {
 	return root;
 }
 
+function setCopiedTasks(tasks) {
+	state.copiedTasks = tasks.map(cloneTaskWithNewIds);
+	sessionStorage.setItem('copiedTasks', JSON.stringify(state.copiedTasks));
+}
+
+function loadCopiedTasksFromSessionStorage() {
+	return JSON.parse(sessionStorage.getItem('copiedTasks')) || [];
+}
+
 function loadTasksFromLocalStorage() {
 	var savedTasks = localStorage.getItem('taskTree');
 	if (savedTasks) {

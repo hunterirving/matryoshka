@@ -99,11 +99,6 @@ function restoreActiveSelection(saved) {
 	sel.addRange(range);
 }
 
-function isSelectionCollapsed() {
-	var sel = window.getSelection();
-	return !sel || sel.isCollapsed;
-}
-
 function generateBreadcrumbs(rootTask, currentPath, selectedTaskId) {
 	var breadcrumbs = '';
 	var currentTask = rootTask;
@@ -400,40 +395,46 @@ function selectFirstSubtask() {
 	}
 }
 
-function handleCopyAndCut(e) {
-	if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'x')) {
-		// copy/cut are disabled during multi-select (no single "true" line)
+function handleCopyCutPaste(e) {
+	if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'x' || e.key === 'v')) {
 		if (state.multiSelectedIds.length > 1) {
 			e.preventDefault();
+			if (e.key === 'c') {
+				setCopiedTasks(getMultiSelectedTasks());
+				shakeAllSelected('vertical');
+			} else if (e.key === 'x' && !e.repeat) {
+				setCopiedTasks(getMultiSelectedTasks());
+				deleteMultiSelected();
+			} else if (e.key === 'v' && !e.repeat) {
+				pasteCopiedTasks(getMultiSelectedTasks());
+			}
 			return;
 		}
 		var activeTaskInput = document.querySelector('.task-container.active .task-text');
 		if (activeTaskInput) {
 			e.preventDefault();
 
-			// With no selection, act on the whole task text
-			var collapsed = isSelectionCollapsed();
-			if (collapsed) {
-				selectAllText(activeTaskInput);
-			}
+			var taskId = activeTaskInput.closest('.task-container').dataset.id;
+			var task = state.currentTask.id === taskId ? state.currentTask : state.currentTask.subtasks.find(t => t.id === taskId);
 
 			if (e.key === 'c') {
-				document.execCommand('copy');
-			} else if (e.key === 'x') {
-				document.execCommand('cut');
-
-				var taskContainer = activeTaskInput.closest('.task-container');
-				var taskId = taskContainer.dataset.id;
-				var task = state.currentTask.id === taskId ? state.currentTask : state.currentTask.subtasks.find(t => t.id === taskId);
 				if (task) {
-					task.text = activeTaskInput.textContent;
-					scheduleSave();
+					setCopiedTasks([task]);
+					applyShakeAnimation(task.id, 'vertical');
 				}
+				return;
 			}
 
-			// After a copy that auto-selected everything, collapse the caret to the end
-			if (e.key === 'c' && collapsed) {
-				setCaretOffset(activeTaskInput, activeTaskInput.textContent.length);
+			if (e.key === 'x') {
+				if (task && !e.repeat) {
+					setCopiedTasks([task]);
+					deleteTask(task);
+				}
+				return;
+			}
+
+			if (e.key === 'v') {
+				if (task && !e.repeat) pasteCopiedTasks([task]);
 			}
 		}
 	}
