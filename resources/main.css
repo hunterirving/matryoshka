@@ -344,7 +344,7 @@ ul {
 	position: absolute;
 	width: 1px;
 	pointer-events: none;
-	animation: caret-blink 1s step-end infinite;
+	animation: caret-blink 1.3s step-end infinite;
 }
 /* non-focused lines' selections: a clipped text duplicate in ::selection
    colors, built and positioned by updateMultiRangeStyles */
