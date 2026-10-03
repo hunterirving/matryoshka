@@ -5,6 +5,7 @@ function scheduleSave() {
 		clearTimeout(state.saveTimer);
 	}
 	state.saveTimer = setTimeout(saveTasksToLocalStorage, 1000);
+	scheduleHistoryCheck();
 }
 
 function saveTasksToLocalStorage() {
@@ -119,13 +120,12 @@ function openTaskTreeFromFile() {
 		reader.onload = function(e) {
 			try {
 				var newRootTask = deserializeTaskTree(e.target.result);
-				if (confirm('Are you sure you want to overwrite the existing task tree?')) {
-					state.rootTask = newRootTask;
-					state.currentTask = state.rootTask;
-					state.taskPath = [state.currentTask];
-					renderCurrentView();
-					saveTasksToLocalStorage();
-				}
+				state.rootTask = newRootTask;
+				state.currentTask = state.rootTask;
+				state.taskPath = [state.currentTask];
+				renderCurrentView();
+				scheduleHistoryCheck();
+				saveTasksToLocalStorage();
 			} catch (error) {
 				alert(`Error importing task tree: ${error.message}`);
 			}

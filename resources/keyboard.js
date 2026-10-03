@@ -208,10 +208,9 @@ function handleKeyDown(e, task) {
 	} else if ((e.key === 'a' || e.key === 'A') && cmd && !e.shiftKey && !e.altKey && hasMultiSelect) {
 		e.preventDefault();
 		selectAllMultiSelected(task);
-	// Cmd+Z / Cmd+Shift+Z during multi-select: app-level undo/redo (native
-	// history would only touch the focused line, so it's blocked)
-	} else if ((e.key === 'z' || e.key === 'Z') && cmd && !e.altKey && hasMultiSelect) {
+	// Cmd+Z / Cmd+Shift+Z: app-wide undo/redo
+	} else if ((e.key === 'z' || e.key === 'Z') && cmd && !e.altKey) {
 		e.preventDefault();
-		e.shiftKey ? redoMultiEdit(task) : undoMultiEdit(task);
+		e.shiftKey ? redoHistory(task) : undoHistory(task);
 	}
 }

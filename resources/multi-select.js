@@ -5,8 +5,6 @@ function clearMultiSelect() {
 	state.multiSelectedIds = [];
 	state.multiCaretOffsets = {};
 	state.multiSelectRanges = {};
-	state.multiUndoStack = [];
-	state.multiRedoStack = [];
 	updateMultiRangeStyles();
 	document.querySelectorAll('.sim-caret').forEach(el => el.remove());
 	var focused = document.activeElement;
@@ -115,7 +113,6 @@ function deleteAtMultiCaret(t, direction) {
 // Backspace/Delete during multi-select: simulate deletion on every selected
 // line (including the focused one) so native deletion can't split a grapheme
 function deleteAcrossMultiSelection(focusedTask, taskInput, direction) {
-	pushMultiUndo();
 	var focusedOffset = getCaretOffset(taskInput);
 	if (focusedOffset != null) state.multiCaretOffsets[focusedTask.id] = focusedOffset;
 	for (var t of getMultiSelectedTasks()) {
@@ -140,55 +137,6 @@ function exitMultiSelect(direction) {
 	} else {
 		selectAndFocusTask(subtasks[Math.min(indices[indices.length - 1] + 1, subtasks.length - 1)]);
 	}
-}
-
-// Cmd+Z / Cmd+Shift+Z: per-session undo/redo of multi-line edits; snapshots
-// are pushed before each mutation (focusedOldText covers input events, where
-// the focused line has already changed)
-function captureMultiSnapshot(focusedId, focusedOldText) {
-	var texts = {};
-	for (var t of getMultiSelectedTasks()) {
-		texts[t.id] = t.id === focusedId ? focusedOldText : t.text;
-	}
-	return {
-		texts: texts,
-		offsets: Object.assign({}, state.multiCaretOffsets),
-		ranges: Object.assign({}, state.multiSelectRanges)
-	};
-}
-
-function pushMultiUndo(focusedId, focusedOldText) {
-	state.multiUndoStack.push(captureMultiSnapshot(focusedId, focusedOldText));
-	state.multiRedoStack = [];
-}
-
-function undoMultiEdit(focusedTask) {
-	var entry = state.multiUndoStack.pop();
-	if (!entry) return;
-	state.multiRedoStack.push(captureMultiSnapshot());
-	applyMultiSnapshot(entry, focusedTask);
-}
-
-function redoMultiEdit(focusedTask) {
-	var entry = state.multiRedoStack.pop();
-	if (!entry) return;
-	state.multiUndoStack.push(captureMultiSnapshot());
-	applyMultiSnapshot(entry, focusedTask);
-}
-
-function applyMultiSnapshot(entry, focusedTask) {
-	for (var t of getMultiSelectedTasks()) {
-		if (typeof entry.texts[t.id] === 'string') {
-			t.text = entry.texts[t.id];
-			syncMultiTaskText(t);
-		}
-	}
-	state.multiCaretOffsets = entry.offsets;
-	state.multiSelectRanges = entry.ranges || {};
-	var input = document.querySelector(`.task-container[data-id="${focusedTask.id}"] .task-text`);
-	if (input) setCaretOffset(input, clampCaret(focusedTask.text, state.multiCaretOffsets[focusedTask.id]));
-	renderSimCarets();
-	scheduleSave();
 }
 
 // Cmd+A: native select-all on the focused line plus stored full-line ranges

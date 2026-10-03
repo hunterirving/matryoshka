@@ -19,8 +19,6 @@ var state = {
 	multiSelectedIds: [],
 	multiCaretOffsets: {},
 	multiSelectRanges: {},
-	multiUndoStack: [],
-	multiRedoStack: [],
 };
 
 function generateId() {

@@ -35,6 +35,8 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `⌘ + C` copy selected task(s) and their subtasks
 - `⌘ + X` cut selected task(s) and their subtasks
 - `⌘ + V` paste copied task(s) and their subtasks
+- `⌘ + Z` undo
+- `⌘ + Shift + Z` redo
 
 ### reorganization
 - `Shift + ⬆️/⬇️` reposition selected task(s) within their current level

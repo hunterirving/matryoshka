@@ -233,6 +233,9 @@ function createTaskElement(task, isParentTask = false) {
 	taskInput.addEventListener('keyup', keyupHandler);
 	taskInput.addEventListener('keydown', handleCopyCutPaste);
 	taskInput.addEventListener('paste', (e) => e.preventDefault());
+	taskInput.addEventListener('beforeinput', (e) => {
+		if (e.inputType === 'historyUndo' || e.inputType === 'historyRedo') e.preventDefault();
+	});
 	taskInput.addEventListener('input', (e) => {
 		var oldText = task.text;
 		// Normalize: strip newlines a paste/IME may introduce, and convert
@@ -246,9 +249,6 @@ function createTaskElement(task, isParentTask = false) {
 		task.text = taskInput.textContent;
 		// Propagate edits to all other multi-selected tasks
 		if (state.multiSelectedIds.length > 1 && state.multiSelectedIds.includes(task.id)) {
-			// snapshot before mirroring; the focused line already changed, so
-			// its pre-edit text comes from oldText
-			pushMultiUndo(task.id, oldText);
 			var focusedOffset = getCaretOffset(taskInput);
 			if (focusedOffset != null) state.multiCaretOffsets[task.id] = focusedOffset;
 			var otherSelected = getMultiSelectedTasks().filter(t => t.id !== task.id);

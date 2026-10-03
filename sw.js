@@ -6,6 +6,7 @@ const ASSETS = [
 	'resources/main.css',
 	'resources/state.js',
 	'resources/storage.js',
+	'resources/history.js',
 	'resources/task-model.js',
 	'resources/multi-select.js',
 	'resources/navigation.js',

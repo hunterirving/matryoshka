@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
+	document.addEventListener('keydown', checkHistory, true);
+
 	// File save/open handlers
 	document.addEventListener('keydown', handleSave);
 	document.addEventListener('keydown', handleOpen);
@@ -107,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 		renderSimCarets();
+		scheduleViewCheck();
 	});
 
 	// hide simulated carets while the window is inactive, like native ones
@@ -129,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	setInitialTheme();
 	renderCurrentView();
 	selectFirstSubtask();
+	initHistory();
 
 	// re-pin the active caret's scroll once layout settles and once fonts load
 	requestAnimationFrame(rescrollActiveCaret);
