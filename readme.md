@@ -4,7 +4,7 @@ turn mountains into molehills (then molehills into anthills) with <b>matryoshka<
 the nested todo list that breaks complex tasks into manageable subtasks.
 
 <p align="center">
-	<a href="https://hunterirving.github.io/matryoshka/"><img src="resources/images/screenshot.gif" width="400px"></a>
+	<a href="https://hunterirving.github.io/matryoshka/"><img src="resources/images/screenshot.gif" width="500px"></a>
 </p>
 
 <i><b>try it now <a href="https://hunterirving.github.io/matryoshka/">in your browser</a>!</b></i> (physical keyboard required).
@@ -30,7 +30,7 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `Shift + ⬅︎` return to the enclosing parent task
 
 <p align="center">
-	<img src="resources/images/breakdown.gif" width="400px">
+	<img src="resources/images/breakdown.gif" width="500px">
 </p>
 
 ### task management
@@ -40,7 +40,7 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `Shift + Enter` toggle selected task(s) completion status
 
 <p align="center">
-	<img src="resources/images/complete.gif" width="400px">
+	<img src="resources/images/complete.gif" width="500px">
 </p>
 
 - `⌘ + C` copy selected task(s) and their subtasks
@@ -56,7 +56,7 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - hold `Shift` with any `⌘` command (push/pull) to simultaneously navigate to the task(s)' new position
 
 <p align="center">
-	<img src="resources/images/reorganize.gif" width="400px">
+	<img src="resources/images/reorganize.gif" width="500px">
 </p>
 
 ### multi-select
@@ -64,14 +64,14 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `⬆︎/⬇︎` (without modifier) clear the selection and resume single-task navigation
 
 <p align="center">
-	<img src="resources/images/multi_select.gif" width="400px">
+	<img src="resources/images/multi_select.gif" width="500px">
 </p>
 
 ### theming
 - press `F2` to cycle through available themes (`Shift + F2` to cycle in reverse)
 
 <p align="center">
-	<img src="resources/images/themes.gif" width="400px">
+	<img src="resources/images/themes.gif" width="500px">
 </p>
 
 ## data persistence
