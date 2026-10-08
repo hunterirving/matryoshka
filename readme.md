@@ -52,7 +52,7 @@ the nested todo list that breaks complex tasks into manageable subtasks.
 - `Shift + ⬆️/⬇️` reposition selected task(s) within their current level
 - `⌘ + ⬆️/⬇️` push selected task(s) into the task above or below
 - `⌘ + ⬅️` pull selected task(s) out one level (to the level of their parent)
-- hold `Shift` with any `⌘` command (push/pull) to simultaneously navigate to the task(s)' new position
+- hold `Shift` with any `⌘` command (push/pull) to simultaneously navigate to the new location of the selected task(s)
 
 <p align="center">
 	<img src="resources/images/reorganize.gif" width="460px">
